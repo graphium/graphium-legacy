@@ -1,0 +1,148 @@
+extends ../layouts/authenticatedDefaultLayout
+block layoutVars
+	- var title = 'Import Batch ' + (importBatch.batchName || importBatch.importBatchGuid)
+	- var sidebarLink = 'collector/'
+mixin horizontalField(label, value)
+	fieldset
+		.form-group
+			label.col-sm-4.control-label #{label}
+			.col-sm-8
+				| !{value}
+				//-span.help-block A block of help text that breaks onto a new line.
+block modals
+block content
+	.row
+		.col-sm-12(style={'margin':'0px 10px 10px 10px'})
+			a(href='/collector/batches/') &lt; Return to Batches
+			br
+			h4.title.pull-left(style={'margin':'10px 0 5px'})
+				if importBatch.batchName
+					| #{importBatch.batchName}
+				else
+					| Batch #{importBatch.importBatchGuid}
+	.row
+		.card.card-plain
+			.row
+				.col-md-12
+					.card
+						.header
+							h4.title Batch Details
+						.content
+							.row
+								- var batchStatusMetadata = helpers.getBatchStatusMetadata(importBatch.batchStatus);
+								.col-sm-6
+									+horizontalField('Batch ID:', importBatch.importBatchGuid)
+									+horizontalField('Status:', batchStatusMetadata.label + (importBatch.batchStatus == 'generation_error' && importBatch.generationError ? ' - ' + _.truncate(importBatch.generationError,{length:100}) : ''))
+									- if(importBatch.batchStatus == 'discarded')
+										+horizontalField('Discard Reason:', importBatch.discardReason)
+									+horizontalField('Facility:', helpers.getFacilityName(facilities, importBatch.facilityId))
+									+horizontalField('Requires Data Entry:', importBatch.requiresDataEntry ? 'Yes' : 'No')
+									+horizontalField('Assigned To:', importBatch.assignedTo )
+									+horizontalField('Batch Source:', importBatch.batchSource )
+									if importBatch.batchSource == 'ftp' && sourceData
+										//-| #{JSON.stringify(sourceData)}
+										+horizontalField('FTP Connection:', '<a href="/org/settings/ftp/connections/' + sourceData.ftpSite.ftpSiteGuid + '">' + sourceData.ftpSite.ftpSiteName + '</a>')
+										+horizontalField('FTP File Name:', sourceData.fileName)
+										+horizontalField('FTP Path:', sourceData.fullPath)
+									- var batchViewLink = importBatch.batchDataType == 'pdf' ? ' <a href="/collector/batch/'+importBatch.importBatchGuid+'.pdf" target="_blank">View</a>' :''
+									+horizontalField('Batch Data Type:', importBatch.batchDataType + batchViewLink )
+									if importBatch.batchDataType == 'pdf'
+										+horizontalField('PDF Pages:', importBatch.batchDataPdfPageCount)
+								.col-sm-6
+									+horizontalField('Batch Last Updated:', moment(importBatch.createdAt).fromNow() + '  (' + moment(importBatch.lastUpdatedAt).format('llll') + ')' )
+									+horizontalField('Created:', moment(importBatch.createdAt).fromNow() + '  (' + moment(importBatch.createdAt).format('llll') + ')' )
+									if importBatch.batchStatus == 'complete'
+										+horizontalField('Completed:', moment(importBatch.completedAt).fromNow() + '  (' + moment(importBatch.completedAt).format('llll') + ')' )
+									+horizontalField('Created By:', importBatch.createdBy )
+									+horizontalField('Processing Type:', importBatch.processingType )
+									- var template = _.find(importBatchTemplates, {templateGuid: importBatch.batchTemplateGuid})
+									- var editLink = importBatch.batchDataType == 'pdf' ? "&nbsp;<a href='#' class='update-batch-template' data-batch='"+importBatch.importBatchGuid+"'>Change</a>" : ''
+									+horizontalField('Template:', template ? template.templateName + editLink : 'No Template' + editLink )
+							.row
+								.col-sm-12.text-center
+									if importBatch.batchStatus != 'discarded'
+										button.discard-batch.btn.btn-danger.btn-fill(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Discard Batch
+											i.fa.fa-trash
+									if importBatch.batchStatus == 'generation_error' || (importBatch.batchStatus == 'generating' && moment(importBatch.lastUpdatedAt).add(10, 'minutes').isBefore(moment())) || (importBatch.batchStatus == 'triage' && importBatch.records.length == 0) || (importBatch.batchDataType == 'pdf' && importBatch.batchDataPdfPageCount > importBatch.records.length)
+										button.btn.btn-info.btn-fill#regenerateBatchButton(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Regenerate Records
+											i.fa.fa-play
+									if importBatch.batchStatus == 'processing' || importBatch.batchStatus == 'pending_review'
+										button.assign-batch.btn.btn-info.btn-fill(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Assign Batch
+											i.fa.fa-user
+									if importBatch.batchStatus == 'triage'
+										button.set-batch-facility.btn.btn-info.btn-fill(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Set Facility
+											i.fa.fa-building
+									if importBatch.batchStatus == 'triage'
+										button.open-batch-for-processing.btn.btn-success.btn-fill(data-batch=importBatch.importBatchGuid disabled=importBatch.facilityId==null style={'margin-right':'5px','margin-left':'5px'}) Open for Processing
+											i.fa.fa-play
+									if importBatch.batchStatus == 'complete' || importBatch.batchStatus == 'pending_review' || importBatch.batchStatus == 'processing'
+										button.btn.btn-success.btn-fill#reprocessBatchRecordsButton(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Reprocess All Records
+											i.fa.fa-play
+										button.btn.btn-success.btn-fill#reprocessIncompleteBatchRecordsButton(data-batch=importBatch.importBatchGuid style={'margin-right':'5px','margin-left':'5px'}) Reprocess Incomplete Records
+											i.fa.fa-play
+						.header
+							h4.title Records
+						.content
+							.row
+								.col-md-12
+									.toolbar
+										button.btn.btn-fill.pull-left#mergeRecordsButton(disabled='true' style={'margin-left':'5px','margin-right':'5px'}) Merge Records
+										if importBatch.batchStatus == 'complete' || importBatch.batchStatus == 'pending_review' || importBatch.batchStatus == 'processing'
+											button.btn.btn-fill.pull-left#reprocessRecordsButton(disabled='true' style={'margin-left':'5px','margin-right':'5px'}) Reprocess Records
+									table.table.table-hover.table-striped#recordsTable
+										thead
+											tr
+												th(data-field="state" data-checkbox="true")
+												th(data-field='importBatchRecordGuid') Record ID
+												th.text-center(data-field='recordIndex' data-visible='false') Record Idx
+												th.text-center(data-field='lastUpdatedAt') Last Updated
+												th.text-center(data-field='recordStatus') Status
+												th.text-center Invalid/Review Fields
+												th Notes
+												th.text-right Actions
+										tbody
+											each record in importBatch.records
+												- var invalidFieldCount = record.dataEntryInvalidFields ? record.dataEntryInvalidFields.length : 0
+												- var reviewFieldCount = record.dataEntryErrorFields ? record.dataEntryErrorFields.length : 0
+												tr
+													td
+													td #{record.importBatchRecordGuid}
+													td.text-center #{record.recordIndex}
+													td.text-center #{moment(record.lastUpdatedAt).from(new Date())}
+													td.text-center
+														| #{helpers.getFriendlyRecordStatus(record.recordStatus)}
+														| &nbsp;&nbsp;
+														//i(class='fa fa-#{helpers.getRecordStatusIcon(record.recordStatus)}' style={color:helpers.getRecordStatusIconColor(record.recordStatus)}) 
+													td.text-center
+														if reviewFieldCount > 0
+															span.warning-badge.badge(style={'background-color':'#F89406', 'margin':'7px 7px 9px 7px'}) #{reviewFieldCount}
+																i.fa.fa-warning.pull-right
+														if invalidFieldCount > 0
+															span.invalid-badge.badge(style={'background-color':'#b94a48', 'margin':'7px 7px 9px 7px'}) #{invalidFieldCount}
+																i.fa.fa-bolt.pull-right
+													td #{_.truncate(record.processingFailedReason,{length: 100})}
+													td.td-actions.text-right
+														if importBatch.batchStatus == 'processing' || importBatch.batchStatus == 'pending_review' || importBatch.batchStatus == 'complete'
+															button.btn.btn-info.btn-simple.btn-icon(onclick='location.href=\'/collector/batch/record/#{record.importBatchGuid}/#{record.recordIndex}/dataEntry\'', rel='tooltip', data-placement='top', title='Data Entry')
+																i.fa.fa-edit  
+														//button.btn.btn-danger.btn-simple.btn-icon(onclick='alert("discarding record")', rel='tooltip', data-placement='top',title='Discard')
+															i.fa.fa-trash
+		
+block otherscripts
+	script.
+		var importBatchGuid = "#{importBatch.importBatchGuid}";
+		var dataEntryUsers = JSON.parse(unescape("#{dataEntryUsers ? escape(JSON.stringify(dataEntryUsers)) : '[]'}"));
+		var facilities = JSON.parse(unescape("#{facilities ? escape(JSON.stringify(facilities)) : '[]'}"));
+		var templates = JSON.parse(unescape("#{importBatchTemplates ? escape(JSON.stringify(importBatchTemplates)) : '[]'}"));
+	script
+		include ../components/discardBatchModal.js
+	script
+		include ../components/assignBatchModal.js
+	script
+		include ../components/updateBatchTemplateModal.js
+	script
+		include ../components/setBatchFacilityModal.js
+	script
+		include ../components/openBatchForProcessingModal.js
+	script
+		include batch.js

@@ -1,0 +1,100 @@
+#createFlowModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title Add Flow
+      .modal-body
+        form#createFlowForm.form-horizontal(method='post')
+          .form-group
+            label.col-md-4.control-label Flow Script Name
+            .col-md-8
+              input#flowName.form-control(name='flowName' type='text' placeholder='Flow Name')
+              span.help-block Can only contain letters and '.'
+          .form-group
+            label.col-md-4.control-label Flow Description
+            .col-md-8
+              input#flowDescription.form-control(name='flowDescription' type='text' placeholder='Description')              
+          .form-group
+            label.col-md-4.control-label Facility
+            .col-md-8
+              select#facilityId.selectpicker(name='facilityId', data-title='Select Facility', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='')
+                each facility in facilities
+                  option(value=facility.facilityId) #{facility.facilityName}
+          .form-group
+            label.col-md-4.control-label Stream Type
+            .col-md-8
+              input#streamType.form-control(name='streamType' type='text' placeholder='Stream Type')
+              span.help-block Should be gic, scheduled, or a custom event type from another flow.
+          .form-group
+            label.col-md-4.control-label Message Types
+            .col-md-8
+              input#messageTypes.form-control(name='messageTypes' type='text' placeholder='Message Types')
+              span.help-block A comma seperated list of message types that will trigger this flow.
+          .form-group
+            label.col-md-4.control-label Script Language
+            .col-md-8
+              select.selectpicker#scriptLanguage(name='scriptLanguage', data-title='Select Script Language', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(value='javascript') JavaScript
+                  option(value='typescript') TypeScript
+          .form-group
+            label.col-md-4.control-label Flow Runtime Version
+            .col-md-8
+              select.selectpicker#runtimeVersion(name='runtimeVersion', data-title='Select Flow Runtime Version', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(value='1.0.0') 1.0.0
+                  option(value='1.1.0') 1.1.0
+          .form-group
+            label.col-md-4.control-label Default Handler (Runtime &gt; 1.1.0)
+            .col-md-8
+              input#defaultHandler.form-control(name='defaultHandler' type='text' placeholder='Default Handler e.g. \'index\'')
+              span.help-block Function name of the default handler that is executed when this script is run.
+          .form-group
+            label.col-md-4.control-label Flow Type
+            .col-md-8
+              select.selectpicker#flowType(name='flowType', data-title='Select Flow Type', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                each flowType in helpers.getFlowTypes()
+                  option(value=flowType.data) #{flowType.label}
+          .form-group#flowTemplatesGroup.collapse
+            label.col-md-4.control-label Flow Templates
+            .col-md-8
+              select.selectpicker#systemFlowScript(name='systemFlowScript', data-title='Select Flow Type', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                each systemFlowScript in systemFlowScripts
+                  option(value=systemFlowScript.systemFlowScriptName) #{systemFlowScript.systemFlowScriptTitle}
+          .form-group#flowContentGroup.collapse.in
+            label.col-md-4.control-label Flow Content
+            .col-md-8
+              textarea#flowContent.form-control(name='flowContent')
+          .form-group#activeGroup.collapse.in
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#activeCheckbox(name="active" type="checkbox")
+                label(for='activeCheckbox') Activated
+          .form-group#systemGlobalGroup.collapse.in
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#systemGlobalCheckbox(name="systemGlobal" type="checkbox")              
+                label(for='systemGlobalCheckbox')
+                  | System Global (Warning: This script will be available to all organizations.)
+          div#templateConfiguration.collapse
+            .legend Template Configuration
+            div#configurationFields
+          //-.form-group
+            label.col-md-4.control-label Generated Batch Flow
+            .col-md-8
+              select.selectpicker#flowGuid(name='flowGuid', data-title='Select Flow', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='')
+                each flow in flows
+                  option(value=flow.flowGuid) #{flow.flowName}
+      .modal-footer
+        .row
+          .col-sm-6
+            div#createFlowPendingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+              i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+              | Creating flow...
+          .col-sm-6.text-right
+            button#cancelCreateFlowButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+            button#saveFlowButton.btn.btn-fill.btn-info(type='button') Create

@@ -1,0 +1,41 @@
+nav.navbar.navbar-default
+	.container-fluid
+		.navbar-header
+			button.navbar-toggle(type='button', data-toggle='collapse')
+				span.sr-only Toggle navigation
+				span.icon-bar
+				span.icon-bar
+				span.icon-bar
+			a.navbar-brand(href='#') #{currentOrganization.organizationName}
+				img.navbar-left(src='/images/logo-graphium-blue_new.png', height='30px', style={'margin-top':'-5px','margin-right':'10px'})
+		.collapse.navbar-collapse
+			ul.nav.navbar-nav.navbar-left
+			ul.nav.navbar-nav.navbar-right
+				li.dropdown.dropdown-with-icons
+					a.dropdown-toggle(href='#', data-toggle='dropdown')
+						i.fa.fa-building-o
+						p.hidden-md.hidden-lg
+							| Organization
+							b.caret
+					ul.dropdown-menu
+						each organization in userOrganizations
+							li
+								a(href='#') #{organization.organizationName}
+				//li.dropdown
+					a.dropdown-toggle(href='#', data-toggle='dropdown')
+						i.fa.fa-bell-o
+						span.notification 5
+						p.hidden-md.hidden-lg
+							| Notifications
+							b.caret
+					ul.dropdown-menu
+						li
+							a(href='#') Notification 1
+						li
+							a(href='#') Notification 2
+						li
+							a(href='#') Notification 3
+						li
+							a(href='#') Notification 4
+						li
+							a(href='#') Another notification

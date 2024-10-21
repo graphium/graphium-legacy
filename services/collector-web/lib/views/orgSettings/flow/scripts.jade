@@ -1,0 +1,48 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Flow Scripts'
+  - var sidebarLink = 'orgSettings/flowScripts'
+
+block modals
+  include scriptModal
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | Flow Scripts
+          if isGraphiumAdministrator
+            button.btn.btn-default.btn-fill.pull-right#showFlowModalButton(type='button', name='addFlow', title='Add Flow') 
+              | Add Flow
+        .content
+          table.table.table-striped
+            thead
+              tr
+                th Name
+                th.text-center Description
+                th.text-center Facility
+                th.text-center Triggered By
+                th.text-center Message Types
+                th.text-center Script Code
+                th.text-center Version
+            tbody
+              each flow in _.sortBy(flows, 'facilityId')
+                tr
+                  td 
+                    a(href='/org/settings/flow/scripts/#{flow.flowGuid}') #{(flow.systemGlobal ? '(Global) ' : '') + flow.flowName}
+                  td.text-center #{flow.flowDescription}
+                  td.text-center !{helpers.getFacilityName(facilities, flow.facilityId) || '<i>Not Specified</i>'}
+                  td.text-center #{helpers.getStreamType(flow.streamType)}
+                  td.text-center #{flow.messageTypes}
+                  td.text-center #{helpers.getFlowType(flow.flowType)}
+                  td.text-center #{flow.version}
+                  //-td.td-actions.text-right
+                    +assignUserButton(batch.importBatchGuid)
+block otherscripts
+  script.
+    var facilities = JSON.parse(unescape("#{escape(JSON.stringify(facilities))}"));
+    var systemFlowScripts = JSON.parse(unescape("#{escape(JSON.stringify(systemFlowScripts))}"));
+  script
+    include scriptModal.js
+  script
+    include scripts.js

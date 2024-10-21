@@ -1,0 +1,27 @@
+nav.navbar.navbar-default
+	.container-fluid
+		.navbar-minimize
+			button.btn.btn-info.btn-fill.btn-round.btn-icon#minimizeSidebar
+						i.fa.fa-ellipsis-v.visible-on-sidebar-regular
+						i.fa.fa-navicon.visible-on-sidebar-mini
+		.navbar-header
+			button.navbar-toggle(type='button', data-toggle='collapse')
+				span.sr-only Toggle navigation
+				span.icon-bar
+				span.icon-bar
+				span.icon-bar
+			a.navbar-brand(href='#') #{currentOrganization.organizationName}
+		.collapse.navbar-collapse
+			ul.nav.navbar-nav.navbar-left
+			ul.nav.navbar-nav.navbar-right
+				if userOrganizations.length > 0
+					li.dropdown.dropdown-with-icons
+						a.dropdown-toggle(href='#', data-toggle='dropdown')
+							i.fa.fa-building-o
+							p.hidden-md.hidden-lg
+								| Organization
+								b.caret
+						ul.dropdown-menu
+							each organization in _.sortBy(userOrganizations, 'organizationName')
+								li
+									a.select-org(href='#' value=organization.organizationNameInternal) #{organization.organizationName}

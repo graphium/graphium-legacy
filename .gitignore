@@ -1,0 +1,9 @@
+# Build output
+build/
+dist/
+
+node_modules/
+
+services/config/
+
+**/.DS_Store

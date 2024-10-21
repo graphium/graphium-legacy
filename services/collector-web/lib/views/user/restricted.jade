@@ -1,0 +1,51 @@
+extends ../layouts/authenticatedDefaultLayout
+
+block layoutVars
+  - var title='Restricted Access'
+
+block modals
+  #create-batch-modal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          h4.modal-title New Batch
+        .modal-body
+          form#createBatchForm.form-horizontal(action='/collector/batches' enctype='multipart/form-data' method='post')
+            .form-group
+              label.col-md-3.control-label Import File
+              .col-md-9
+                .input-group
+                  input#fileName(type="text" class="form-control" readonly)
+                  label.input-group-btn
+                      span.btn.btn-primary
+                          | Browse&hellip; 
+                          input(name="importBatchFile" type="file" style="display: none;" accept=".csv,.txt,.pdf,application/pdf,text/csv")
+            .form-group
+              label.col-md-3.control-label Assigned To
+              .col-md-9
+                select.selectpicker(name='assignTo', data-title='Select User', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(value='self' selected) Assign to Me (User Four)
+                  option(data-divider='true')
+                  option(value='1') User One
+                  option(value='2') User Two
+                  option(value='3') User Three
+            .form-group
+              label.col-md-3
+              .col-md-9
+                label.checkbox
+                  input(name='requiresDataEntry' type='checkbox', data-toggle='checkbox', value='true')
+                  | Requires Data Entry
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Cancel
+          button#createBatchButton.btn.btn-primary(type='submit',onclick='submitCreateBatchForm()') Create
+block content
+  .row
+    .col-md-12
+      .alert.alert-danger
+        span
+          b Error -
+          | Your user account does not have access to this feature. If you believe this is in error, please report to your administrator, or contact 
+          a(href='mailto:support@graphiumhealth.com') Graphium Health support.
+block otherscripts

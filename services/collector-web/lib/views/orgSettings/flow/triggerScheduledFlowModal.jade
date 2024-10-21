@@ -1,0 +1,23 @@
+#triggerScheduledFlowModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title Trigger Scheduled Flow
+      .modal-body
+        form#triggerScheduledFlowForm.form-horizontal(method='post')
+          .form-group
+            label.col-md-4.control-label Trigger Date
+            .col-md-8
+              input#triggerDate.form-control.datepicker(name='triggerDate' type='text' placeholder='Trigger Date')
+              span.help-block Select the date for which you would like to trigger this scheduled task.
+      .modal-footer
+        .row
+          .col-sm-6
+            div#triggerScheduledFlowPendingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+              i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+              | Triggering flow...
+          .col-sm-6.text-right
+            button#cancelTriggerScheduledFlowButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+            button#triggerScheduledFlowButton.btn.btn-fill.btn-info(type='button') Trigger Flow

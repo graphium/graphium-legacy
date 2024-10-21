@@ -1,0 +1,46 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'FTP Connections'
+  - var sidebarLink = 'orgSettings/ftpConnections'
+
+block modals
+  include ftpModal
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | FTP Connections
+          if isGraphiumAdministrator
+            button.btn.btn-default.btn-fill.pull-right#showFtpModalButton(type='button', name='addFlow', title='Add Flow') 
+              | Add Folder
+        .content
+          table.table.table-striped
+            thead
+              tr
+                th Name
+                th.text-center Facility
+                th.text-center FTP Protocol
+                th.text-center Folder
+                th.text-center Created
+                th.text-center Last Scanned
+            tbody
+              each ftpSite in _.sortBy(ftpSites, 'createdAt')
+                tr
+                  td 
+                    a(href='/org/settings/ftp/connections/#{ftpSite.ftpSiteGuid}') #{ftpSite.ftpSiteName}
+                  td.text-center !{helpers.getFacilityName(facilities, ftpSite.facilityId) || '<i>Not Specified</i>'}
+                  td.text-center #{ftpSite.ftpProtocol}
+                  td.text-center #{ftpSite.folder}
+                  td.text-center #{moment(ftpSite.createdAt).from(new Date())}
+                  td.text-center #{ftpSite.lastScannedAt ? moment(ftpSite.lastScannedAt).from(new Date()) : 'Not Scanned'}
+                  //-td.td-actions.text-right
+                    +assignUserButton(batch.importBatchGuid)
+block otherscripts
+  script.
+    var facilities = JSON.parse(unescape("#{facilities ? escape(JSON.stringify(facilities)) : 'null'}"));
+    var flows = JSON.parse(unescape("#{flows ? escape(JSON.stringify(flows)) : '[]'}"));
+  script
+    include connections.js
+  script
+    include ftpModal.js

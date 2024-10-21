@@ -1,0 +1,12 @@
+#recordProcessingLogsModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title Processing Logs
+      .modal-body
+        div#resultsJsonDisplay
+      .modal-footer
+        .row.col-sm-12.text-right
+            button#cancelCreateFlowButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Close

@@ -1,0 +1,54 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Import Batch Templates'
+  - var sidebarLink = 'orgSettings/collectorTemplates'
+
+block modals
+  include templateModal
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | Import Batch Templates
+          if isGraphiumAdministrator
+            button.btn.btn-default.btn-fill.pull-right#showTemplateModalButton(type='button', name='addTemplate', title='Add Template') 
+              | Add Template
+        .content
+          table.table.table-striped
+            thead
+              tr
+                th Name
+                th Description
+                th.text-center Data Type
+                th.text-center Requires Data Entry
+                th.text-center Data Entry Form
+                th.text-center Record Processing Script
+                th.text-center Default Assignee
+                th.text-center Last Updated
+                th.text-center Active
+                th
+            tbody
+              each template in _.sortBy(templates, 'templateName')
+                - var flowScript = _.find(flows, {flowGuid:template.flowScriptGuid})
+                tr
+                  td #{(template.systemGlobal ? '(Global) ' : '') + template.templateName}
+                  td #{template.templateDescription}
+                  td.text-center #{template.batchDataType}
+                  td.text-center #{template.requiresDataEntry ? 'Yes' : 'No'}
+                  td.text-center #{template.dataEntryFormDefinitionName}
+                  td.text-center #{flowScript != null ? flowScript.flowName : 'No flow script for: ' + template.flowScriptGuid}
+                  td.text-center #{template.defaultAssigneeUserName}
+                  td.text-center #{moment(template.lastUpdatedAt).from(new Date())}
+                  td.text-center #{template.activeIndicator}
+                  td.td-actions.text-right
+                    if !template.systemGlobal || isGraphiumAdministrator
+                      a.edit-template(href='#' data-template=(template.templateGuid)) Edit
+block otherscripts
+  script.
+    var templates = JSON.parse(unescape("#{escape(JSON.stringify(templates))}"));
+    var flows = JSON.parse(unescape("#{escape(JSON.stringify(flows))}"));
+  script
+    include templates.js
+  script
+    include templateModal.js

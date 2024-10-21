@@ -1,0 +1,66 @@
+mixin sidebarGroupItem(groupId, itemId, title, route, access, showForOrg)
+  if !showForOrg || showForOrg.indexOf(currentOrganization.organizationNameInternal) > -1
+    if !access || helpers.userHasAccess(orgUser, access)
+      li(class={active:sidebarLink == groupId + '/' + itemId})
+        a(href=route) #{title}
+mixin sidebarGroup(groupId, title, icon, items, showForOrg)
+  li(class={active: _.startsWith(sidebarLink,groupId+'/')})
+    a(data-toggle='collapse', href='#'+groupId)
+      i(class=icon)
+      p
+        | #{title}
+        b.caret
+    .collapse(id=groupId class={in: _.startsWith(sidebarLink,groupId+'/')})
+      ul.nav
+        each item in items
+          +sidebarGroupItem(groupId, item.itemId, item.title, item.route, item.access, item.showForOrg)
+.sidebar(data-color='azure', data-image='/assets/img/full-screen-image-3.jpg')
+  .logo
+    a.logo-text(href='/')
+      img(src='/images/logo-graphium-white_new.png' width='225')
+  .sidebar-wrapper
+    .user
+      .photo
+        img(src='/images/default_avatar_male1.png')
+      .info
+        a.collapsed(data-toggle='collapse', href='#collapseExample')
+          //| Welcome, #{orgUser.firstName || orgUser.userName}
+          br
+          | Welcome, #{orgUser.firstName || orgUser.userName}
+          b.caret
+        #collapseExample.collapse
+          ul.nav
+            //li
+            //  a(href='/user/profile') My Profile
+            li
+              a(href='/logout') Logout
+    ul.nav
+      +sidebarGroup('dashboards', 'Dashboard', 'pe-7s-graph2', [
+        {itemId: 'macra', title:'MACRA Compliance', route: '/dashboards/macra', access:{roles:{some:['ORG_ADMIN']}}},
+        {itemId: 'macraLegacy', title:'MACRA Legacy', route: '/dashboards/macra/legacy', access:{roles:{some:['ORG_ADMIN']}}},
+        //{itemId: 'importBatch', title:'Import Batches', route: '/dashboards/importBatch', access:{roles:{some:['DATA_ENTRY_ADMIN', 'DATA_ENTRY_SUPERVISOR', 'ORG_ADMIN']}}},
+        {itemId: 'dataAnomalies', title:'Data Anomalies', route: '/dashboards/dataAnomalies', access:{roles:{some:['ORG_ADMIN']}}},
+        {itemId: 'dataEntry', title:'Data Entry', route: '/dashboards/dataEntry', access:{roles:{some:['DATA_ENTRY_ADMIN', 'DATA_ENTRY_SUPERVISOR', 'ORG_ADMIN']}}},
+        {itemId: 'dataEntryErrors', title:'Data Entry Errors', route: '/dashboards/dataEntryErrors', access:{roles:{some:['DATA_ENTRY_ADMIN', 'DATA_ENTRY_SUPERVISOR', 'ORG_ADMIN']}}, showForOrg: ['org1000', 'demo1000', 'pams2002']},
+        {itemId: 'usage', title:'System Usage', route: '/dashboards/usage', access:{roles:{some:['ORG_ADMIN']}}},
+        {itemId: 'orgScoreCard', title: 'Organization Score Card', route: '/dashboards/orgScoreCard', access:{roles:{some:['ORG_ADMIN']}}},
+        {itemId: 'facilityScoreCard', title: 'Facility Score Card', route: '/dashboards/facilityScoreCard', access:{roles:{some:['ORG_ADMIN','FAC_ADMIN']}}}
+      ])
+      +sidebarGroup('collector', 'Collector', 'pe-7s-upload', [
+        {itemId: 'batches', title: 'Batches', route: '/collector/batches'},
+        {itemId: 'externalWebForms', title: 'External Web Forms', route: '/collector/externalWebForms'},
+      ])
+      +sidebarGroup('orgSettings', 'Org. Settings', 'pe-7s-config', [
+        {itemId: 'flowScripts', title: 'Flow Scripts', route: '/org/settings/flow/scripts', access:{roles:{some:['DATA_ENTRY_ADMIN', 'ORG_ADMIN']}}},
+        {itemId: 'faxLines', title: 'Fax Lines', route: '/collector/faxLines', access:{roles:['DATA_ENTRY_ADMIN','ORG_ADMIN']}},
+        {itemId: 'ftpConnections', title: 'FTP Connections', route: '/org/settings/ftp/connections', access:{roles:{some:['DATA_ENTRY_ADMIN','ORG_ADMIN']}}},
+        {itemId: 'collectorTemplates', title: 'Import Batch Templates', route: '/org/settings/collector/templates', access:{roles:{some:['DATA_ENTRY_ADMIN','ORG_ADMIN']}}},
+        //{itemId: 'flowSystems', title: 'EMR Integrations', route: '/org/settings/flow/systems', access:{roles:{some:['DATA_ENTRY_ADMIN', 'ORG_ADMIN']}}}
+        {itemId: 'logoSettings', title: 'Logos', route: '/org/settings/logos/settings', access:{roles:{some:['ORG_ADMIN']}}}
+      ])
+      if currentOrganization.organizationNameInternal === 'org1000'
+        li(class={active:sidebarLink == '/encounters'})
+          a(href='/encounters')
+            i.pe-7s-look
+            p Encounters
+      

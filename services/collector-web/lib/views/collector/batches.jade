@@ -1,0 +1,268 @@
+extends ../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Import Batches'
+  - var sidebarLink = 'collector/batches'
+mixin resumeDataEntryButton(batchGuid)
+  button.resume-data-entry.btn.btn-success.btn-simple.btn-icon(type='button', rel='tooltip', data-placement='left', title='Resume Data Entry', data-batch=batchGuid)
+    i.fa.fa-play
+mixin ignoreAllRecordsPendingReviewButton(batchGuid)
+  button.ignore-records-pending-review.btn.btn-warning.btn-simple.btn-icon(type='button', rel='tooltip', data-placement='left', title='Ignore All Pending Records', data-batch=batchGuid)
+    i.fa.fa-archive
+mixin assignUserButton(batchGuid)
+  button.assign-batch.btn.btn-info.btn-simple.btn-icon(type='button', rel='tooltip', data-placement='left', title='Assign to Another User', data-batch=batchGuid)
+    i.fa.fa-user
+mixin progressBarSegment(color, counts)
+  .progress-bar(class=color style={
+    'width': '#{counts.percentage*100}%'
+  })
+    span.sr-only #{percentWidth*100}% Complete
+mixin progressBar(dataEntryPercentages)
+  .progress(style={'height': '20px', 'margin-bottom':'0px'})
+    // pending_data_entry is grey
+    +progressBarSegment('progress-bar-success',dataEntryPercentages.processing_complete)
+    +progressBarSegment('progress-bar-info progress-bar-striped',dataEntryPercentages.pending_processing)
+    +progressBarSegment('progress-bar-info',dataEntryPercentages.processing)
+    +progressBarSegment('progress-bar-warning',dataEntryPercentages.processing_failed)
+    +progressBarSegment('progress-bar-warning',dataEntryPercentages.pending_review)
+    +progressBarSegment('progress-bar-danger',dataEntryPercentages.discarded)
+    +progressBarSegment('progress-bar-danger',dataEntryPercentages.ignored)
+mixin batchesTable(batches, status, actions)
+  .content.table-responsive.table-full-width
+    table.table.table-striped.bootstrap-table(style="display: none;")
+      thead
+        tr
+          th Batch Name/ID
+          th.text-center Facility
+          th.text-center Batch Type
+          th.text-center Record Count
+          th.text-center Data Entry Progress
+          th.text-center Assigned To
+          th.text-center Created
+          th.text-right Actions
+      tbody
+        each batch in _.orderBy(batches,'createdAt','asc')
+          if !status || _.includes( _.flatten([status]), batch.batchStatus)
+            - var dataEntryPercentages = helpers.getDataEntryProgressPercentages(batch.statusCounts);
+            tr
+              td 
+                a(href='/collector/batch/#{batch.importBatchGuid}') #{batch.batchName || batch.importBatchGuid}
+              td.text-center #{helpers.getFacilityName(facilities, batch.facilityId)}
+              td.text-center #{helpers.getBatchDataTypeLabel(batch)}
+              td.text-center #{dataEntryPercentages.total}
+              td.text-center
+                +progressBar(dataEntryPercentages)
+              td.text-center #{batch.assignedTo}
+              td.text-center #{moment(batch.createdAt).from(new Date())}
+              td.td-actions.text-right
+                if actions && actions.assignUser
+                  +assignUserButton(batch.importBatchGuid)
+                if actions && actions.resumeDataEntry
+                  +resumeDataEntryButton(batch.importBatchGuid)
+                if actions && actions.ignoreAllRecordsPendingReview
+                  +ignoreAllRecordsPendingReviewButton(batch.importBatchGuid)
+block modals
+  #create-batch-modal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          h4.modal-title New Batch
+        .modal-body
+          form#createBatchForm.form-horizontal(action='/collector/batches' enctype='multipart/form-data' method='post')
+            .form-group
+              label.col-md-4.control-label Import File (PDF/CSV)
+              .col-md-8
+                .input-group
+                  input#fileName(type="text" class="form-control" readonly)
+                  label.input-group-btn
+                      span.btn.btn-default.btn-fill
+                          | Browse&hellip; 
+                          input#importBatchFile(name="importBatchFile" type="file" style="display: none;" accept=".pdf,application/pdf,.csv,text/csv,text,.txt")
+            .form-group
+              label.col-md-4.control-label Batch Name
+              .col-md-8
+                input#batchName.form-control(name='batchName' type='text' placeholder='Batch Name')
+            .form-group
+              label.col-md-4.control-label Batch Template
+              .col-md-8
+                select.selectpicker#templateGuid(name='templateGuid', data-title='Select Template', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(data-divider='true')
+                  each template in templates
+                    if template.activeIndicator
+                      option(value=template.templateGuid) #{(template.systemGlobal ? '(Global) ' : '') + template.templateName}
+            .form-group
+              label.col-md-4.control-label Facility
+              .col-md-8
+                select.selectpicker(id='facilityId' name='facilityId', data-title='Select Facility', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(data-divider='true')
+                  each facility in facilities
+                    option(value=facility.facilityId) #{facility.facilityName}
+            //-.form-group
+              label.col-md-4.control-label Processing Flow
+              .col-md-8
+                select.selectpicker(name='flow', data-title='Select Flow', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                  option(data-divider='true')
+                  each flow in flows
+                    if flow.streamType == 'collector'
+                      option(value=flow.flowGuid) #{flow.flowName}
+            .form-group
+              label.col-md-4.control-label Date/Time Batch Received
+              .col-md-8
+                input#receivedAt.form-control.datetimepicker(name='receivedAt' type='text' placeholder='Date/Time Batch Received')
+        .modal-footer
+          .row
+            .col-sm-6
+              div#createBatchLoadingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+                i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+                | Please be patient, creating batch...
+            .col-sm-6.text-right
+              button#cancelNewBatchButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+              button#createBatchButton.btn.btn-fill.btn-info(type='submit',onclick='submitCreateBatchForm()') Create
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | Import Batches
+          .btn-group.pull-right
+            button.btn.btn-primary.btn-fill#grabBatchButton(type='button', name='grabbatch', title='Grab Batch') 
+              | Grab Batch
+            button.btn.btn-success.btn-fill#showNewBatchButton(type='button', name='newbatch', title='New Batch') 
+              | New Batch
+        .content.content-full-width
+          ul.nav.nav-tabs(role='tablist')
+            li.active(role='presentation')
+              a(href='#your-batches', data-toggle='tab')
+                i.fa.fa-info
+                |  Your Batches
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              li
+                a(href='#generating-batches', data-toggle='tab')
+                  i.fa.fa-hourglass
+                  |  Generating
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              li
+                a(href='#triage-batches', data-toggle='tab')
+                  i.fa.fa-hourglass
+                  |  Triage
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              li
+                a(href='#all-processing-batches', data-toggle='tab')
+                  i.fa.fa-user
+                  |  Processing
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              li
+                a(href='#pending-review-batches', data-toggle='tab')
+                  i.fa.fa-user
+                  |  Pending Review
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              li
+                a(href='#complete-batches', data-toggle='tab')
+                  i.fa.fa-user
+                  |  Complete
+          .tab-content  
+            #your-batches.tab-pane.active
+              .content.table-responsive.table-full-width
+                table.table.table-striped.bootstrap-table(style="display: none;")
+                  thead
+                    tr
+                      th Batch Name/ID
+                      th.text-center Facility
+                      th.text-center Batch Type
+                      th.text-center Created
+                      th.text-center Record Count
+                      th.text-center Status
+                      th.text-center Data Entry Progress
+                      th.text-right Actions
+                  tbody
+                    each batch in _.orderBy(assignedBatches,'createdAt','asc')
+                      - var dataEntryPercentages = helpers.getDataEntryProgressPercentages(batch.statusCounts);
+                      tr
+                        td 
+                          a(href='/collector/batch/#{batch.importBatchGuid}') #{batch.batchName || batch.importBatchGuid}
+                        td.text-center #{helpers.getFacilityName(facilities, batch.facilityId)}
+                        td.text-center #{helpers.getBatchDataTypeLabel(batch)}
+                        td.text-center #{moment(batch.createdAt).from(new Date())}
+                        td.text-center #{dataEntryPercentages.total}
+                        td.text-center #{batch.batchStatus}
+                        td.text-center
+                          +progressBar(dataEntryPercentages)
+                        td.td-actions.text-right
+                          +resumeDataEntryButton(batch.importBatchGuid)
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              #generating-batches.tab-pane
+                //-+batchesTable(incompleteBatches,['pending_generation','generating','generation_error'])
+                .content.table-responsive.table-full-width
+                  table.table.table-striped.bootstrap-table(style="display: none;")
+                    thead
+                      tr
+                        th Batch Name/ID
+                        th.text-center Facility
+                        th.text-center Batch Type
+                        th.text-center Record Count
+                        th.text-center Status
+                        th.text-center Created
+                        th.text-right Actions
+                    tbody
+                      each batch in _.orderBy(incompleteBatches,'createdAt','asc')
+                        - var dataEntryPercentages = helpers.getDataEntryProgressPercentages(batch.statusCounts);
+                        if _.includes( ['pending_generation','generating','generation_error'], batch.batchStatus)
+                          tr
+                            td 
+                              a(href='/collector/batch/#{batch.importBatchGuid}') #{batch.batchName || batch.importBatchGuid}
+                            td.text-center #{helpers.getFacilityName(facilities, batch.facilityId)}
+                            td.text-center #{helpers.getBatchDataTypeLabel(batch)}
+                            td.text-center #{dataEntryPercentages.total}
+                            td.text-center #{batch.batchStatus}
+                            td.text-center #{moment(batch.createdAt).from(new Date())}
+                            td.td-actions.text-right
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              #triage-batches.tab-pane
+                +batchesTable(incompleteBatches,'triage', {assignUser:true})
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              #all-processing-batches.tab-pane
+                +batchesTable(incompleteBatches,'processing', {resumeDataEntry:true, assignUser:true})
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              #pending-review-batches.tab-pane
+                +batchesTable(incompleteBatches,'pending_review', {assignUser:true, ignoreAllRecordsPendingReview:true})
+            if helpers.currentUserHasPermission(orgUser, 'IMPORT_BATCH:READ_ALL')
+              #complete-batches.tab-pane
+                .content.table-responsive.table-full-width
+                  table.table.table-striped.bootstrap-table(style="display: none;")
+                    thead
+                      tr
+                        th Batch Name/ID
+                        th.text-center Facility
+                        th.text-center Batch Type
+                        th.text-center Record Count
+                        th.text-center Data Entry Progress
+                        th.text-center Created
+                        th.text-center Completed
+                    tbody
+                      each batch in _.orderBy(completeBatches,'completedAt','desc')
+                        - var dataEntryPercentages = helpers.getDataEntryProgressPercentages(batch.statusCounts);
+                        tr
+                          td 
+                            a(href='/collector/batch/#{batch.importBatchGuid}') #{batch.batchName || batch.importBatchGuid}
+                          td.text-center #{helpers.getFacilityName(facilities, batch.facilityId)}
+                          td.text-center #{helpers.getBatchDataTypeLabel(batch)}
+                          td.text-center #{dataEntryPercentages.total}
+                          td.text-center
+                            +progressBar(dataEntryPercentages)
+                          td.text-center #{moment(batch.createdAt).from(new Date())}
+                          td.text-center #{moment(batch.completedAt || batch.lastUpdatedAt).from(new Date())}
+block otherscripts
+  script(src="https://unpkg.com/axios/dist/axios.min.js")
+  script.
+    var dataEntryUsers = JSON.parse(unescape("#{escape(JSON.stringify(dataEntryUsers))}"));
+  script
+    include ../components/assignBatchModal.js
+  script
+    include ../components/ignoreAllRecordsPendingReviewModal.js
+  script
+    include ../components/discardBatchModal.js
+  script
+    include ../components/grabBatchModal.js    
+  script
+    include batches.js

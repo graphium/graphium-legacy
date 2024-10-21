@@ -1,0 +1,49 @@
+doctype html
+block variables
+html(lang='en')
+    block layoutVars
+    head
+        meta(charset='utf-8')
+        link(rel='icon', type='image/png', href='/favicon_new.ico')
+        meta(http-equiv='X-UA-Compatible', content='IE=edge,chrome=1')
+        title #{title} - Graphium Health
+        meta(content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0', name='viewport')
+        meta(name='viewport', content='width=device-width')
+        include globalCss.jade
+        include globalHeadScripts.jade
+        block extraStyles
+    body
+        .main-panel(style={width:'100%'})
+            nav.navbar.navbar-default
+                .container-fluid
+                    .navbar-header(style={width:'100%'})
+                        button.navbar-toggle(type='button', data-toggle='collapse')
+                            span.sr-only Toggle navigation
+                            span.icon-bar
+                            span.icon-bar
+                            span.icon-bar
+                        block logo
+                        if externalWebForm.associateCaseWithRecord && isFormView
+                            button#viewCaseRecords.navbar-right.btn.btn-fill.btn-primary Show All Records
+                        if externalWebForm.enableDebug && isFormView
+                            button#showDebugLogs.navbar-right.btn.btn-fill.btn-danger Show Logs
+            block content
+            footer.footer
+                .container-fluid
+                    p.copyright.pull-left
+                        | Version #{version} - Form ID (#{formGuid})
+                    nav.pull-left
+                    //-p.copyright.pull-right
+                        - var year = new Date().getFullYear();
+                        | © #{year} 
+                        a(href='http://www.graphiumhealth.com') Graphium Health
+                            | , Anesthesia Practice Solutions
+        script.
+            var htmlEnv = JSON.parse(unescape("#{escape(JSON.stringify(htmlEnv))}"));
+    block modals
+    script
+        include objectAssignPolyFill.js
+    include globalScripts.jade
+    script 
+        include authenticatedDefaultLayout.js
+    block otherscripts

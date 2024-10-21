@@ -1,0 +1,637 @@
+extends ../layouts/noSidebarLayout
+block layoutVars
+	- var title = 'Record ' + importBatchRecord.importBatchRecordGuid + ' Data Entry'
+
+mixin delayReason2019Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ label:'Patient Late', value:'pat_lt_to_preop' },
+		{ label:'NPO Violation', value:'pat_npo_vltn' },
+		{ label:'Equipment Not Available', value:'eqpmt_instrmt_na' },
+		{ label:'RN Not Available', value:'perirn_peri_rn_na' },
+		{ label:'Anesthesia Not Available', value:'anes_na' },
+		{ label:'Surgeon Not Available', value:'surgn_na' },
+		{ label:'PreOp Staff Delay', value:'preop_staff_delay' },
+		{ label:'Prior Case Delay', value:'sched_pr_case_dur' },
+		{ label:'No PAT Visit/Lab Req.', value:'no_pat_visit_lab_req' },
+		{ label:'Other', value:'othr_othr' }
+	], tabTo, tabBackToTab)
+
+mixin delayReason2021Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ label:'Patient Late', value:'pat_lt_to_preop' },
+		{ label:'NPO Violation', value:'pat_npo_vltn' },
+		{ label:'Equipment Not Available', value:'eqpmt_instrmt_na' },
+		{ label:'Interprtr Not Available', value:'ancstf_intrprtr_na' },
+		{ label:'RN Not Available', value:'perirn_peri_rn_na' },
+		{ label:'Anesthesia Not Available', value:'anes_na' },
+		{ label:'Surgeon Not Available', value:'surgn_na' },
+		{ label:'Abnormal Lab Values', value:'lab_abn_crtcl_lab_vals' },
+		{ label:'Delay for Emergency', value:'sched_case_pstpnd_emerg' },
+		{ label:'Other', value:'othr_othr' }
+	], tabTo, tabBackToTab)
+
+mixin cancellationReason2019Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ value:'hosp_no_or_tm', label:'No OR Time' },
+		{ value:'hosp_equip_fail', label:'Equipment Failure' },
+		{ value:'hosp_postop_icu_bed_na', label:'ICU Bed Not Available' },
+		{ value:'hosp_postop_ip_bed_na', label:'Inpt Bed Not Available' },
+		{ value:'pat_abn_lab', label:'Abnormal Labs' },
+		{ value:'pat_rfsl_sign_consnt', label:'Patient Decision' },
+		{ value:'pat_no_show', label:'Patient No Show' },
+		{ value:'pat_npo_vltn', label:'NPO Violation' },
+		{ value:'surgn_plan_chg', label:'Change in Surgical Plan' },
+		{ value:'othr_othr', label:'Other' }
+	], tabTo, tabBackToTab)
+
+mixin cancellationReason2021Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ value:'hosp_no_or_tm', label:'No OR Time' },
+		{ value:'hosp_equip_fail', label:'Equipment Failure' },
+		{ value:'hosp_postop_icu_bed_na', label:'ICU Bed Not Available' },
+		{ value:'hosp_postop_ip_bed_na', label:'Inpt Bed Not Available' },
+		{ value:'pat_abn_lab', label:'Abnormal Labs' },
+		{ value:'pat_rfsl_sign_consnt', label:'Patient Decision' },
+		{ value:'pat_no_show', label:'Patient No Show' },
+		{ value:'pat_npo_vltn', label:'NPO Violation' },
+		{ value:'surgn_plan_chg', label:'Change in Surgical Plan' },
+		{ value:'othr_othr', label:'Other' }
+	], tabTo, tabBackToTab)
+
+
+mixin arterialLineSterilitySelect(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ value:'RADIAL', label:'Radial' },
+		{ value:'ULNAR', label:'Ulnar' },
+		{ value:'BRACHIAL', label:'Brachial' },
+		{ value:'DP', label:'Dorsalis Pedis' },
+		{ value:'PT', label:'Posterior Tibial' },
+		{ value:'FEMORAL', label:'Femoral' },
+		{ value:'AXILLARY', label:'Axillary' }
+	], tabTo, tabBackToTab)
+
+
+mixin complicationReason2019Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ label:'Cardiac arrest (unplanned)', value:'cv_cardiac_arrest' },
+		{ label:'Myocardial ischemia', value:'cv_myocard_ischem' },
+		{ label:'Myocardial infarction', value:'cv_myocard_infarc' },
+		{ label:'Dysrhythmia requiring intervention', value:'cv_arrythmia' },
+		{ label:'Unexpected death', value:'cv_unexp_death' },
+		{ label:'Uncontrolled HTN', value:'cv_sev_hyperten' },
+		{ label:'Stroke, CVA, or coma', value:'cv_stroke' },
+		{ label:'Vasc Injury (arterial/ptx)', value:'cv_vasc_access_comp' },
+		{ label:'Pneumo (related to anesthesia)', value:'resp_pneumothorax' },
+		{ label:'Aspiration', value:'resp_aspiration' },
+		{ label:'Failed regional anesthetic', value:'proc_failed_blk_req_ga' },
+		{ label:'Systemic local anesthetic toxicity', value:'proc_local_anes_tox' },
+		{ label:'Peripheral nerve injury following regional', value:'regnl_periph_nerve_inj' },
+		{ label:'Wet tap', value:'proc_wet_tap_epi' },
+		{ label:'Temperature <95.9°F or <35.5°C', value:'pacu_hypotherm' },
+		{ label:'Reintubation (planned trial extub)', value:'pacu_reintub_plnd' },
+		{ label:'Reintubation (no trial extub)', value:'pacu_reintub' },
+		{ label:'Inadequate reversal', value:'med_prol_nm_block' },
+		{ label:'Intractable N/V', value:'pacu_intract_naus_vom' },
+		{ label:'Unexpctd PostOp Vent', value:'pacu_unplnd_postop_med_vent' },
+		{ label:'Medication administration error', value:'med_admin_err' },
+		{ label:'Adverse transfusion reaction', value:'misc_transfsn_react' },
+		{ label:'Anaphylaxis', value:'med_anaphylaxis' },
+		{ label:'Opiod reversal required', value:'med_opiod_rev_rqrd' },
+		{ label:'Wrong site surgery', value:'proc_wrong_site' },
+		{ label:'Wrong patient', value:'proc_wrong_pat' },
+		{ label:'Wrong surgical procedure', value:'proc_wrong_proc' },
+		{ label:'Unplanned hospital admission', value:'pacu_unplnd_hosp_adm' },
+		{ label:'Unplanned ICU admission', value:'pacu_unplnd_icu_adm' },
+		{ label:'Dental trauma', value:'arwy_dental_trauma' },
+		{ label:'Visual loss', value:'misc_visual_loss' },
+		{ label:'MH', value:'misc_malig_hyper' },
+		{ label:'Awareness under GA', value:'misc_aware_ga' },
+		{ label:'Unable to intubate', value:'arwy_unable_to_intub' },
+		{ label:'Airway fire in OR', value:'arwy_fire' },
+		{ label:'Corneal abrasion', value:'misc_eye_inj' },
+		{ label:'Equipment malfunction', value:'proc_equip_malf' },
+		{ label:'Fall in OR', value:'misc_pat_fall_or' },
+		{ label:'Other', value:'misc_othr' }
+	], tabTo, tabBackToTab)
+
+mixin complicationReason2021Select(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+		{ label:'Cardiac arrest (unplanned)', value:'cv_cardiac_arrest' },
+		{ label:'Myocardial ischemia', value:'cv_myocard_ischem' },
+		{ label:'Myocardial infarction', value:'cv_myocard_infarc' },
+		{ label:'Dysrhythmia requiring intervention', value:'cv_arrythmia' },
+		{ label:'Unexpected death', value:'cv_unexp_death' },
+		{ label:'Uncontrolled HTN', value:'cv_sev_hyperten' },
+		{ label:'Stroke, CVA, or coma', value:'cv_stroke' },
+		{ label:'Vasc Injury (arterial/ptx)', value:'cv_vasc_access_comp' },
+		{ label:'Pneumo (related to anesthesia)', value:'resp_pneumothorax' },
+		{ label:'Aspiration', value:'resp_aspiration' },
+		{ label:'Failed regional anesthetic', value:'proc_failed_blk_req_ga' },
+		{ label:'Systemic local anesthetic toxicity', value:'proc_local_anes_tox' },
+		{ label:'Peripheral nerve injury following regional', value:'regnl_periph_nerve_inj' },
+		{ label:'Wet tap', value:'proc_wet_tap_epi' },
+		{ label:'Temperature <95.9°F or <35.5°C', value:'pacu_hypotherm' },
+		{ label:'Reintubation (planned trial extub)', value:'pacu_reintub_plnd' },
+		{ label:'Reintubation (no trial extub)', value:'pacu_reintub' },
+		{ label:'Inadequate reversal', value:'med_prol_nm_block' },
+		{ label:'Intractable N/V', value:'pacu_intract_naus_vom' },
+		{ label:'Unexpctd PostOp Vent', value:'pacu_unplnd_postop_med_vent' },
+		{ label:'Prolonged PACU stay', value:'pacu_prol_unplnd_pacu' },
+		{ label:'Medication administration error', value:'med_admin_err' },
+		{ label:'Adverse transfusion reaction', value:'misc_transfsn_react' },
+		{ label:'Anaphylaxis', value:'med_anaphylaxis' },
+		{ label:'Opiod reversal required', value:'med_opiod_rev_rqrd' },
+		{ label:'Wrong site surgery', value:'proc_wrong_site' },
+		{ label:'Wrong patient', value:'proc_wrong_pat' },
+		{ label:'Wrong surgical procedure', value:'proc_wrong_proc' },
+		{ label:'Unplanned hospital admission', value:'pacu_unplnd_hosp_adm' },
+		{ label:'Unplanned ICU admission', value:'pacu_unplnd_icu_adm' },
+		{ label:'Dental trauma', value:'arwy_dental_trauma' },
+		{ label:'Visual loss', value:'misc_visual_loss' },
+		{ label:'MH', value:'misc_malig_hyper' },
+		{ label:'Awareness under GA', value:'misc_aware_ga' },
+		{ label:'Unable to intubate', value:'arwy_unable_to_intub' },
+		{ label:'Airway fire in OR', value:'arwy_fire' },
+		{ label:'Corneal abrasion', value:'misc_eye_inj' },
+		{ label:'Equipment malfunction', value:'proc_equip_malf' },
+		{ label:'Fall in OR', value:'misc_pat_fall_or' },
+		{ label:'Other', value:'misc_othr' }
+	], tabTo, tabBackToTab)
+
+
+mixin dataEntrySurgeryLocationSelect(id, tabTo, tabBackToTab)
+	select.selectpicker.facility-dependent-picker(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), data-title='Select Location from List', data-live-search="true", data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+		option(value="")
+		- var sortedDetails = _.sortBy(surgeryLocationsValueSet.details, function(d) { return d.valueList.Description; })
+		each surgeryLocationDetail in sortedDetails
+			option(value=surgeryLocationDetail.valueList.Code) #{surgeryLocationDetail.valueList.Description}
+		option(data-divider='true')
+		+ errorOptionsForSelectInput
+		each error in helpers.getSurgeryLocationDataEntryErrors()
+			option(value=error.data) #{error.label}
+
+mixin inputErrorSelector(parentId)
+	//input#errorDisplay.form-control.hidden(type='text' disabled='true')
+	span.input-group-addon.dropdown.data-entry-error-selector
+		a.dropdown-toggle.data-entry-error-selector-button(id="#{parentId}ErrorSelector" parentId=(parentId) data-toggle="dropdown" style={color:'#9A9A9A'} tabindex='-1')
+			i.fa.fa-warning
+		ul.dropdown-menu
+			each error in helpers.getDataEntryErrors()
+				li
+					a(value=error.data) #{error.label}
+			li.divider
+			li
+				a(value="#clear") Clear Error
+
+mixin errorOptionsForSelectInput
+	each error in helpers.getDataEntryErrors()
+		option(value=error.data) #{error.label}
+
+mixin dsvTextInput(columnName, columnTitle, originalValue, currentValue)
+	input.form-control(id=columnName, name=columnName, type='text', value=currentValue)
+
+mixin dataEntryTextInput(id, placeholder, tabTo, tabBackToTab)
+	.input-group
+		input.form-control(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), type='text', placeholder=placeholder)
+		+inputErrorSelector(id)
+
+mixin dataEntryNumberInput(id, placeholder, tabTo, tabBackToTab)
+	.input-group
+		input.form-control(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), type='number', min='0', placeholder=placeholder)
+		+inputErrorSelector(id)
+
+mixin dataEntryProviderSelect(id, facilitySelectInputId, providerType, tabTo, tabBackToTab, isResponsible, isPrimaryResponsible)
+	select.selectpicker.facility-dependent-picker(id=id, class=isResponsible?'responsible-provider':undefined, class=isPrimaryResponsible?'primary-responsible-provider':undefined, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), data-title='Select Provider from List', data-live-search="true", data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+		option(value="")
+		each provider in helpers.getFilteredProviderList(providers, providerType)
+			option(value=provider.providerId data-facility=provider.facilityId data-npi=provider.nationalProviderId) #{provider.lastName}, #{provider.firstName} (#{provider.nationalProviderId}, #{provider.providerType})
+		option(data-divider='true')
+		+ errorOptionsForSelectInput
+		each error in helpers.getProviderDataEntryErrors()
+			option(value=error.data) #{error.label}
+
+mixin dataEntrySelect(id, title, options, tabTo, tabBackToTab)
+	select.selectpicker(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), data-title=title, data-live-search="true", data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+		option(value="")
+		- each option in options
+			option(value=option.value) #{option.label}
+		option(data-divider='true')
+		+ errorOptionsForSelectInput
+
+mixin dataEntrySelectWithoutErrors(id, title, options, tabTo, tabBackToTab)
+	select.selectpicker(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), data-title=title, data-live-search="true", data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+		option(value="")
+		- each option in options
+			option(value=option.value) #{option.label}
+
+mixin dataEntryDateInput(id, label, tabTo, tabBackToTab, isFormServiceDate)
+	.input-group
+		input.form-control(id=id, class=isFormServiceDate?'form-service-date':undefined, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), type='text', data-mask="99-99-9999" placeholder="ex: MM-DD-YYYY")
+		+inputErrorSelector(id)
+
+mixin dataEntryTimeInput(id, label, tabTo, tabBackToTab)
+	.input-group
+		input.form-control(id=id, name=id, tab-to-tab=(tabTo), tab-back-to-tab=(tabBackToTab), type='text', data-mask="99:99" placeholder="ex: HH:MM (24hr)")
+		+inputErrorSelector(id)
+
+mixin dataEntryYesNoSelect(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+			{ label:'Yes', value:'yes' },
+			{ label:'No', value:'no' }
+		], tabTo, tabBackToTab)
+
+mixin dataEntryYesNoReasonSelect(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+			{ label:'Yes', value:'yes' },
+			{ label:'No - Reason Specified in Record', value:'no-reason-specified' },
+			{ label:'No - Reason Unspecified', value:'no-reason-unspecified' }
+		], tabTo, tabBackToTab)
+
+mixin dataEntryYesNoNaSelect(id, label, tabTo, tabBackToTab)
+	+dataEntrySelect(id, label, [
+			{ label:'Yes', value:'yes' },
+			{ label:'No', value:'no' },
+			{ label:'N/A', value:'na' }
+		], tabTo, tabBackToTab)
+
+mixin cancellationReasonSelect(id, label, tabTo, tabBackToTab)
+	- var cancellations = _.map(cancellationsValueSet.details, function(detail) { return { label:detail.valueList.Description, value: detail.valueList.Name }; })
+	+dataEntrySelect(id, label, cancellations, tabTo, tabBackToTab)
+
+mixin complicationReasonSelect(id, label, tabTo, tabBackToTab)
+	- var complications = _.map(complicationsValueSet.details, function(detail) { return { label:detail.valueList.Description, value: detail.valueList.Name }; })
+	+dataEntrySelect(id, label, complications, tabTo, tabBackToTab)
+
+mixin delayReasonSelect(id, label, tabTo, tabBackToTab)
+	- var delays = _.map(delaysValueSet.details, function(detail) { return { label:detail.valueList.Description, value: detail.valueList.Name }; })
+	+dataEntrySelect(id, label, delays, tabTo, tabBackToTab)
+
+mixin dataEntryPanelHeading(id, target, label)
+	.panel-heading(id=(id))
+		h4.panel-title(style={width:'auto','padding-top':'10px', 'padding-bottom':'10px'})
+			a.panel-toggle(href='#', data-target=(target), style={width:'auto',display:'inline'})
+				| #{label}
+			i.success-badge.fa.fa-check.i-success.hidden(style={'margin-left':'6px'})
+			span.warning-badge.badge.hidden(style={'background-color':'#F89406', 'margin':'7px 7px 9px 7px'})
+				span.badge-count N
+				i.fa.fa-warning.pull-right
+			span.invalid-badge.badge.hidden(style={'background-color':'#b94a48', 'margin':'7px 7px 9px 7px'})
+				span.badge-count N
+				i.fa.fa-bolt.pull-right
+			b.caret
+
+block modals
+	include recordProcessingLogsModal.jade
+block content
+	.row
+		.col-sm-12(style={'margin':'10px 0px 10px'})
+			a(href='/collector/batch/#{importBatchRecord.importBatchGuid}',style={'margin-top':'10px'}) &lt; Return to Batch
+			br
+			h4.title.pull-left(style={'line-height':'0','margin':'10px 0 5px'})
+				| #{importBatch.batchName || importBatch.importBatchGuid} &gt; Record #{importBatchRecord.recordIndex} &nbsp;
+				span.badge(style={padding:'6px 10px', 'font-size':'14px', margin:'0px 0px 6px'}) #{helpers.getFriendlyRecordStatus(importBatchRecord.recordStatus)}
+	.row
+		.col-sm-6
+			.card
+				.content.content-full-width
+					- var notesTabActive = importBatchRecord.recordDataType != 'pdf_bitmap_pages' && importBatchRecord.recordDataType != 'external_web_form'
+					ul.nav.nav-tabs(role='tablist')
+						if importBatchRecord.recordDataType == 'pdf_bitmap_pages' || importBatchRecord.recordDataType == 'external_web_form'
+							li.active(role='presentation')
+								a(href='#record', data-toggle='tab') Record
+						li(class={active:(notesTabActive == true)})
+							a(href='#notesTab', data-toggle='tab') Notes
+						li
+							a(href='#history', data-toggle='tab') History
+						if helpers.currentUserHasRole(orgUser, 'DATA_ENTRY_ADMIN')
+							li
+								a(href='#dataEntryData', data-toggle='tab') Data Entry Data
+					.tab-content
+						if importBatchRecord.recordDataType == 'pdf_bitmap_pages'
+							#record.tab-pane.active
+								.row
+									.col-sm-12
+										div(style={'box-shadow': '0px 0px 10px #CCCCCC'})
+											img#recordImage(width='100')
+								.footer(style={'margin-top':'15px'})
+									if importBatchRecord.recordData && importBatchRecord.recordData.length > 1
+										ul.pagination.pagination-no-border.pull-left(style={margin:'0'})
+												li
+													a#previousRecordPageButton(href='#') «
+												each recordData, index in importBatchRecord.recordData
+													li.selectRecordPageListItem(class={active:index == 0} data-record-page-index=(index))
+														a.selectRecordPageButton(data-record-page-index=(index) href='#') #{index+1}
+												li
+													a#nextRecordPageButton(href='#') »
+									button#flipImageButton.btn.btn-info.btn-fill.pull-right Rotate Image
+										i.fa.fa-rotate-right
+									.clearfix
+						if importBatchRecord.recordDataType == 'external_web_form'
+							#record.tab-pane.active
+								.content#externalWebFormDataContent
+						#notesTab.tab-pane(class={ active:(notesTabActive == true) })
+							.content
+								div#notes
+								.row#refreshingNotesLoadingMessage.text-center(style={visibility:'hidden'})
+									.font-icon-container(style={'margin-top':'4px'})
+										i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+								.row#addNoteRow
+									.col-sm-12
+										form#addNoteForm
+											.form-group
+												label Add Note
+												textarea.form-control#noteText(type='text')
+								.row
+									.col-sm-6
+										div#addingNoteLoadingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+											i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+											| Adding note...
+									.col-sm-6
+											.form-group.text-right
+												button.btn.btn-fill.btn-info#addNoteButton Add Note
+						#history.tab-pane
+							.content.table-responsive.table-full-width
+								table.table.table-hover.table-striped
+									thead
+										th Event Timestamp
+										th Event Description
+									each recordEvent in _.orderBy(recordEvents, ['eventTime'], ['desc'])
+										tbody
+											tr
+												td #{moment(recordEvent.eventTime).fromNow()}
+												td
+													| #{helpers.getFriendlyImportEventDescription(recordEvent)}
+													if recordEvent.eventType == 'record_processing_succeeded' || recordEvent.eventType == 'record_processing_failed'
+														| &nbsp;
+														a.viewRecordProcessingEventLogsButton(href='#' data-import-event=(recordEvent.importEventGuid)) View Logs
+						#dataEntryData.tab-pane
+							.content#dataEntryDataEditor
+		.col-sm-6
+			.card
+				if importBatchRecord.recordDataType == 'dsv_row'
+					.header
+						| Record Data
+					.content
+						form.form-horizontal#dsvRecordForm
+							each field in dsvFields
+								fieldset
+									.form-group
+										label.col-sm-5.control-label #{field.columnTitle || field.columnName}
+										.col-sm-5
+											+dsvTextInput(field.columnName, field.columnTitle, field.originalValue, field.currentValue)
+				if importBatchRecord.recordDataType == 'pdf_bitmap_pages'
+					.header.clearfix
+						h3.title.pull-left #{dataEntryFormDefinition != null ? dataEntryFormDefinition.title : 'Unknown Form'}
+						.dropdown.pull-right
+							a.dropdown-toggle.pull-right#templateDropdownButton(href='#', data-toggle='dropdown')
+								i.fa.fa-list-ul
+							if _.includes(['Metro2017MacraPlus','Metro2019MacraPlus','Metro2019Team','Metro2020MacraPlus','Metro2020Team','Metro2021MacraPlus','Metro2021Team','Metro2023MacraStandard','PP17.001','PP19.001'], importBatch.dataEntryFormDefinitionName)
+								ul.dropdown-menu
+									li
+										a.template(href='#' data-template='asa1-amb-gen-pacu') 1, Amb, Gen, PACU
+									li
+										a.template(href='#' data-template='asa1-amb-gen-icu') 1, Amb, Gen, ICU
+									li
+										a.template(href='#' data-template='asa1-amb-mac-pacu') 1, Amb, MAC, PACU
+									li
+										a.template(href='#' data-template='asa1-amb-mac-icu') 1, Amb, MAC, ICU
+									li
+										a.template(href='#' data-template='asa2-amb-gen-pacu') 2, Amb, Gen, PACU
+									li
+										a.template(href='#' data-template='asa2-amb-gen-icu') 2, Amb, Gen, ICU
+									li
+										a.template(href='#' data-template='asa2-amb-mac-pacu') 2, Amb, MAC, PACU
+									li
+										a.template(href='#' data-template='asa2-amb-mac-icu') 2, Amb, MAC, ICU
+									li
+										a.template(href='#' data-template='asa3-amb-gen-pacu') 3, Amb, Gen, PACU
+									li
+										a.template(href='#' data-template='asa3-amb-gen-icu') 3, Amb, Gen, ICU
+									li
+										a.template(href='#' data-template='asa3-amb-mac-pacu') 3, Amb, MAC, PACU
+									li
+										a.template(href='#' data-template='asa3-amb-mac-icu') 3, Amb, MAC, ICU
+									li
+										a.template(href='#' data-template='asa1-inpt-gen-pacu') 1, Inpt, Gen, PACU
+									li
+										a.template(href='#' data-template='asa1-inpt-gen-icu') 1, Inpt, Gen, ICU
+									li
+										a.template(href='#' data-template='asa1-inpt-mac-pacu') 1, Inpt, MAC, PACU
+									li
+										a.template(href='#' data-template='asa1-inpt-mac-icu') 1, Inpt, MAC, ICU
+									li
+										a.template(href='#' data-template='asa2-inpt-gen-pacu') 2, Inpt, Gen, PACU
+									li
+										a.template(href='#' data-template='asa2-inpt-gen-icu') 2, Inpt, Gen, ICU
+									li
+										a.template(href='#' data-template='asa2-inpt-mac-pacu') 2, Inpt, MAC, PACU
+									li
+										a.template(href='#' data-template='asa2-inpt-mac-icu') 2, Inpt, MAC, ICU
+									li
+										a.template(href='#' data-template='asa3-inpt-gen-pacu') 3, Inpt, Gen, PACU
+									li
+										a.template(href='#' data-template='asa3-inpt-gen-icu') 3, Inpt, Gen, ICU
+									li
+										a.template(href='#' data-template='asa3-inpt-mac-pacu') 3, Inpt, MAC, PACU
+									li
+										a.template(href='#' data-template='asa3-inpt-mac-icu') 3, Inpt, MAC, ICU
+							else
+								ul.dropdown-menu
+									li
+										a.template(href='#' data-template='asa1-gen-pacu') 1, Gen, PACU
+									li
+										a.template(href='#' data-template='asa1-gen-icu') 1, Gen, ICU
+									li
+										a.template(href='#' data-template='asa1-mac-pacu') 1, MAC, PACU
+									li
+										a.template(href='#' data-template='asa1-mac-icu') 1, MAC, ICU
+									li
+										a.template(href='#' data-template='asa2-gen-pacu') 2, Gen, PACU
+									li
+										a.template(href='#' data-template='asa2-gen-icu') 2, Gen, ICU
+									li
+										a.template(href='#' data-template='asa2-mac-pacu') 2, MAC, PACU
+									li
+										a.template(href='#' data-template='asa2-mac-icu') 2, MAC, ICU
+									li
+										a.template(href='#' data-template='asa3-gen-pacu') 3, Gen, PACU
+									li
+										a.template(href='#' data-template='asa3-gen-icu') 3, Gen, ICU
+									li
+										a.template(href='#' data-template='asa3-mac-pacu') 3, MAC, PACU
+									li
+										a.template(href='#' data-template='asa3-mac-icu') 3, MAC, ICU
+									li
+										a.template(href='#' data-template='addl-macra-no') Add'l MACRA - No
+									li
+										a.template(href='#' data-template='addl-macra-dne') Add'l MACRA - Data Not Entered
+					.content
+						form#recordDataEntryForm
+							#accordion.panel-group
+								if importBatch.dataEntryFormDefinitionName == 'PqrsReady'
+									include dataEntryForms/PqrsReady
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2017MacraPlus'
+									include dataEntryForms/Metro2017MacraPlus
+								else if importBatch.dataEntryFormDefinitionName == 'TEST.Metro2017MacraPlus'
+									include dataEntryForms/TEST.Metro2017MacraPlus.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS17.001'
+									include dataEntryForms/MCRPLS17.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP17.001'
+									include dataEntryForms/MCRSMP17.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'PP17.001'
+									include dataEntryForms/PP17.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2019MacraPlus'
+									include dataEntryForms/Metro2019MacraPlus
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2019Team'
+									include dataEntryForms/Metro2019Team
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS19.001'
+									include dataEntryForms/MCR19.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP19.001'
+									include dataEntryForms/MCR19.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'PP19.001'
+									include dataEntryForms/PP19.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'NAP19.001'
+									include dataEntryForms/NAP19.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS20.001'
+									include dataEntryForms/MCR20.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP20.001'
+									include dataEntryForms/MCR20.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS21.001'
+									include dataEntryForms/MCR21.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP21.001'
+									include dataEntryForms/MCR21.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS23.001'
+									include dataEntryForms/MCR23.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP23.001'
+									include dataEntryForms/MCR23.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRPLS24.001'
+									include dataEntryForms/MCR24.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'MCRSMP24.001'
+									include dataEntryForms/MCR24.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'PP20.001'
+									include dataEntryForms/PP20.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2020Team'
+									include dataEntryForms/Metro2020Team.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2020MacraPlus'
+									include dataEntryForms/Metro2020MacraPlus.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2021Team'
+									include dataEntryForms/Metro2021Team.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2021MacraPlus'
+									include dataEntryForms/Metro2021MacraPlus.jade
+								else if importBatch.dataEntryFormDefinitionName == 'Metro2023MacraStandard'
+									include dataEntryForms/Metro2023MacraStandard.jade
+								else if importBatch.dataEntryFormDefinitionName == 'PP23.001'
+									include dataEntryForms/PP23.001.jade
+								else if importBatch.dataEntryFormDefinitionName == 'PP24.001'
+									include dataEntryForms/PP24.001.jade
+								else
+									| The specified data entry form (#{importBatch.dataEntryFormDefinitionName}) was not found.
+				.footer
+					.row
+						.col-sm-3
+							if helpers.isValidImportBatchRecordAction(importBatchRecord, 'discard')
+								button#discardButton.btn.btn-fill.btn-danger Discard
+									i.fa.fa-trash
+							if helpers.isValidImportBatchRecordAction(importBatchRecord, 'undiscard')
+								button#undiscardButton.btn.btn-fill.btn-danger Undiscard
+									i.fa.fa-trash
+							if helpers.isValidImportBatchRecordAction(importBatchRecord, 'unignore')
+								button#unignoreButton.btn.btn-fill.btn-danger Unignore
+									i.fa.fa-trash
+							if helpers.isValidImportBatchRecordAction(importBatchRecord, 'ignore')
+								button#ignoreButton.btn.btn-fill.btn-danger Ignore
+									i.fa.fa-trash
+						.col-sm-9.text-right
+							.btn-group
+								if helpers.isValidImportBatchRecordAction(importBatchRecord, 'add_to_processing_queue')
+									button#reprocessButton.btn.btn-fill.btn-primary Add to Processing Queue
+										i.fa.fa-save
+								if helpers.isValidImportBatchRecordAction(importBatchRecord, 'save_and_reprocess')
+									button#saveAndReprocessButton.btn.btn-fill.btn-success Save and Reprocess
+										i.fa.fa-save
+								if helpers.isValidImportBatchRecordAction(importBatchRecord, 'complete_data_entry')
+									button#dataEntryCompleteButton.btn.btn-fill.btn-success Complete Data Entry
+										i.fa.fa-check
+					.row
+						.col-sm-6
+							div#submitLoadingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+								i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+								| Submitting form...
+						.col-sm-6.text-right
+							if helpers.isValidImportBatchRecordAction(importBatchRecord,'save_and_reprocess') || helpers.isValidImportBatchRecordAction(importBatchRecord, 'complete_data_entry') || helpers.isValidImportBatchRecordAction(importBatchRecord, 'add_to_processing_queue')
+								div.checkbox
+									input(id="goToNextCheck" type="checkbox" value="true" checked)
+									label(for='goToNextCheck') Go to Next Record in Batch
+
+block otherscripts
+	script.
+		var importBatch = JSON.parse(unescape("#{escape(JSON.stringify(importBatch))}"));
+		var importBatchRecord = JSON.parse(unescape("#{escape(JSON.stringify(importBatchRecord))}"));
+		var previousRecord = JSON.parse(unescape("#{escape(JSON.stringify(previousRecord))}"));
+		var facilityDataEntryFormSettings = JSON.parse(unescape("#{escape(JSON.stringify(facilityDataEntryFormSettings))}"));
+		var complicationsValueSet = JSON.parse(unescape("#{escape(JSON.stringify(complicationsValueSet))}"));
+	script
+		include ../../util/templateHelpers.js
+	script(src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.4/ace.js')
+	script(src='/javascript/jquery.mlens-1.6.js')
+	script
+		include recordDataEntry.js
+	script
+		if importBatch.dataEntryFormDefinitionName == 'PqrsReady'
+			include dataEntryForms/PqrsReady.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2017MacraPlus'
+			include dataEntryForms/Metro2017MacraPlus.js
+		else if importBatch.dataEntryFormDefinitionName == 'TEST.Metro2017MacraPlus'
+			include dataEntryForms/TEST.Metro2017MacraPlus.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS17.001'
+			include dataEntryForms/MCRPLS17.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP17.001'
+			include dataEntryForms/MCRSMP17.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'PP17.001'
+			include dataEntryForms/PP17.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2019MacraPlus'
+			include dataEntryForms/Metro2019MacraPlus.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2019Team'
+			include dataEntryForms/Metro2019Team.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS19.001'
+			include dataEntryForms/MCR19.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP19.001'
+			include dataEntryForms/MCR19.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'PP19.001'
+			include dataEntryForms/PP19.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'NAP19.001'
+			include dataEntryForms/NAP19.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS20.001'
+			include dataEntryForms/MCR20.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP20.001'
+			include dataEntryForms/MCR20.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS21.001'
+			include dataEntryForms/MCR21.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP21.001'
+			include dataEntryForms/MCR21.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS23.001'
+			include dataEntryForms/MCR23.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP23.001'
+			include dataEntryForms/MCR23.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRPLS24.001'
+			include dataEntryForms/MCR24.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'MCRSMP24.001'
+			include dataEntryForms/MCR24.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'PP20.001'
+			include dataEntryForms/PP20.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2020Team'
+			include dataEntryForms/Metro2020Team.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2020MacraPlus'
+			include dataEntryForms/Metro2020MacraPlus.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2021Team'
+			include dataEntryForms/Metro2021Team.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2021MacraPlus'
+			include dataEntryForms/Metro2021MacraPlus.js
+		else if importBatch.dataEntryFormDefinitionName == 'Metro2023MacraStandard'
+			include dataEntryForms/Metro2023MacraStandard.js
+		else if importBatch.dataEntryFormDefinitionName == 'PP23.001'
+			include dataEntryForms/PP23.001.js
+		else if importBatch.dataEntryFormDefinitionName == 'PP24.001'
+			include dataEntryForms/PP24.001.js
+	script
+		include recordProcessingLogsModal.js

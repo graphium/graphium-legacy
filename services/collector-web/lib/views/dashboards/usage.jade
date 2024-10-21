@@ -1,0 +1,36 @@
+extends ../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'System Usage'
+  - var sidebarLink = 'dashboards/usage'
+block modals
+  include importRecordUsageModal
+block content
+  .row
+    - var range = moment.range(moment().subtract(18,'months'), moment());
+    - var months = range.toArray('months')
+    .col-md-12
+      .card
+        .header
+          | Usage By Facility
+        .content
+          table.table.table-striped.rotate#usageTable
+            thead
+              tr(styles='vertical-align: bottom')
+                th Facility Name
+                th.text-right Metric
+                each month in months
+                  th.text-center #{month.format('MMM YYYY')}
+                th.text-center 
+                  | Total
+                  //- br
+                    - var today = moment().format('MMM. D, YYYY');
+                    - var startOfYear = moment().startOf('year').format('MMM. D, YYYY');
+                    | #{startOfYear} - #{today}
+            tbody#usageTableBody
+block otherscripts
+  script var facilities = !{facilities ? JSON.stringify(facilities) : '[]'}
+  script var importBatchTemplates = !{importBatchTemplates ? JSON.stringify(importBatchTemplates) : '[]'}
+  script
+    include usage.js
+  script
+    include importRecordUsageModal.js

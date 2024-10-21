@@ -1,0 +1,125 @@
+#templateModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title Import Batch Template
+      .modal-body
+        form#templateForm.form-horizontal(method='post')
+          .form-group
+            label.col-md-4.control-label Name
+            .col-md-8
+              input#templateName.form-control(name='templateName' type='text' placeholder='e.g. My Template')
+          .form-group
+            label.col-md-4.control-label Description
+            .col-md-8
+              input#templateDescription.form-control(name='templateDescription' type='text' placeholder='e.g. A short description.')
+          .form-group
+            label.col-md-4.control-label Source File Type
+            .col-md-8
+              select#batchDataType.selectpicker(name='batchDataType', data-title='Select File Type', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='pdf') PDF
+                option(value='dsv_comma') Comma Delimited (CSV)
+                option(value='dsv_pipe') Pipe Delimited
+                option(value='dsv_tab') Tab Delimited
+                option(value='dsv_colon') Colon Delimited
+                option(value='hagy') HAGY
+                option(value='hcaAdvantx') HCA AdvantX
+                option(value='medaxion') Medaxion
+          .form-group#delimiterHeaderGroup.collapse.in
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#hasHeaderCheckbox(name="hasHeader" type="checkbox")
+                label(for='hasHeaderCheckbox')
+                  | Delimited File Has Header
+          .form-group
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#skipEmptyLinesCheckbox(name="skipEmptyLines" type="checkbox")
+                label(for='skipEmptyLinesCheckbox')
+                  | Skip Empty Rows
+          .form-group
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#skipLinesWithEmptyValuesCheckbox(name="skipLinesWithEmptyValues" type="checkbox")
+                label(for='skipLinesWithEmptyValuesCheckbox')
+                  | Skip Rows With Empty Values
+          .form-group
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#relaxColumnCountCheckbox(name="relaxColumnCount" type="checkbox")
+                label(for='relaxColumnCountCheckbox')
+                  | Relax Column Count
+          .form-group
+            label.col-md-4.control-label Lines to Skip (Optional)
+            .col-md-8
+              input#linesToSkip.form-control(name='linesToSkip' type='text' placeholder='Lines to skip before parsing. e.g. 3')
+              span.help-block A number which indicates the number of lines to ignore at the beginning of the DSV file. This is before the header (if included) and all data.
+          .form-group
+            label.col-md-4.control-label Column Names (Optional)
+            .col-md-8
+              input#columnNames.form-control(name='columnNames' type='text' placeholder='Comma separated list.')
+              span.help-block A column separated list of column names, used to identify a specific column. e.g. encounterNumber.
+          .form-group
+            label.col-md-4.control-label Column Titles (Optional)
+            .col-md-8
+              input#columnTitles.form-control(name='columnTitles' type='text' placeholder='Comma separated list.')
+              span.help-block A column separated list of column titles, used to display specific fields. e.g. Encounter Number
+          .form-group
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#requiresDataEntryCheckbox(name="requiresDataEntry" type="checkbox")
+                label(for='requiresDataEntryCheckbox')
+                  | Requires Data Entry
+          .form-group
+            label.col-md-4.control-label Data Entry Form
+            .col-md-8
+              select#dataEntryFormDefinitionName.selectpicker(name='dataEntryFormDefinitionName', data-title='Select Data Entry Form', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                each formDefinition in dataEntryFormDefinitions
+                  option(value=(formDefinition.name)) #{formDefinition.title}
+          .form-group
+            label.col-md-4.control-label Record Processing Flow
+            .col-md-8
+              select#flowScriptGuid.selectpicker(name='flowScriptGuid', data-title='Select Flow', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                each flow in flows
+                  if flow.streamType == 'collector'
+                    option(value=flow.flowGuid) #{flow.flowName}
+          .form-group
+            label.col-md-4.control-label Default Assignee
+            .col-md-8
+              select#defaultAssigneeUserName.selectpicker(name='defaultAssigneeUserName', data-title='Select User', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='')
+                each user in dataEntrySupervisors
+                  if user.activeIndicator
+                    option(value=user.userName) #{[user.lastName,user.firstName].join(', ') + ' ('+ user.userName+')'}
+          .form-group#activeGroup.collapse.in
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#activeCheckbox(name="active" type="checkbox")
+                label(for="activeCheckbox")
+                  | Activated
+
+          if isGraphiumAdministrator
+            .form-group#systemGlobalGroup.collapse.in
+              .col-md-4
+              .col-md-8
+                div.checkbox
+                  input#systemGlobalCheckbox(name="systemGlobal" type="checkbox")
+                  label(for='systemGlobalCheckbox')
+                    | System Global (Warning: This will make this template visible to all organizations)
+      .modal-footer
+        .row
+          .col-sm-6
+            div#modalPendingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+              i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+              | Creating or updating template...
+          .col-sm-6.text-right
+            button#cancelModalButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+            button#saveOrCreateModalButton.btn.btn-fill.btn-info(type='button') Commit

@@ -1,0 +1,226 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Form Definition (' + (formDefinition.formDefinitionTitle) + ')';
+  - var sidebarLink = 'orgSettings/formDefinitions'
+
+mixin horizontalField(label, value)
+  fieldset
+    .form-group
+      label.col-sm-5.control-label #{label}
+      .col-sm-7
+        | #{value}
+
+block modals
+  #updateFormModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+    .modal-dialog
+      #updateFormWizardCard.card.card-wizard
+        form#wizardForm(method='', action='', novalidate='novalidate')
+          .header.text-center
+            h3.title Update Form Definition
+          .content
+            ul.nav.nav-pills
+              li.active(style='width: 33.3333%;')
+                a(href='#uploadTab', data-toggle='tab', aria-expanded='true') Upload
+              li(style='width: 33.3333%;')
+                a(href='#validateTab', data-toggle='tab') Validate
+              li(style='width: 33.3333%;')
+                a(href='#submitTab', data-toggle='tab') Submit
+            .tab-content
+              #uploadTab.tab-pane.active
+                p.text-center Please select the folder that contains your <br /> form definition and the page background images.
+                .row
+                  .col-md-10.col-md-offset-1
+                    .form-group
+                      label.control-label Form Definition Folder
+                      .input-group
+                          input#formDefinitionFolderInputDisplay(type="text" class="form-control" readonly)
+                          label.input-group-btn
+                              span.btn.btn-default.btn-fill
+                                  | Browse&hellip; 
+                                  input#formDefinitionFolderInput(name="formDefinitionFolderInput" type="file" style="display: none;" webkitdirectory directory multiple)
+                //-.row
+                  .col-md-12
+                    .form-group
+                      label.col-md-4.control-label(style={"line-height": "38px"}) Form Definition Folder
+                      .col-md-8
+                        .input-group
+                          input#formDefinitionFolderInputDisplay(type="text" class="form-control" readonly)
+                          label.input-group-btn
+                              span.btn.btn-default.btn-fill
+                                  | Browse&hellip; 
+                                  input#formDefinitionFolderInput(name="formDefinitionFolderInput" type="file" style="display: none;" webkitdirectory directory multiple)
+              #validateTab.tab-pane
+                h5.text-center Please give us more details about your platform.
+                .row
+                  .col-md-10.col-md-offset-1
+                    .form-group
+                      label.control-label
+                        | Your Website
+                        star *
+                      input.form-control(type='text', name='website', url='true', placeholder='ex: http://www.creative-tim.com')
+                .row
+                  .col-md-5.col-md-offset-1
+                    .form-group
+                      label.control-label Framework Type
+                      input.form-control(type='text', name='framework', placeholder='ex: http://www.creative-tim.com')
+                  .col-md-5
+                    .form-group
+                      label.control-label
+                        | Language
+                        star *
+                      //
+                        IMPORTANT! - the "bootstrap select picker" is not compatible with jquery.validation.js, that's why we use the "default select" inside this wizard. We will try to contact the guys who are responsibble for the "bootstrap select picker" to find a solution. Thank you for your patience.
+                      select.form-control(name='cities')
+                        option(selected='', disabled='') - language -
+                        option(value='ms') Bahasa Melayu
+                        option(value='ca') Català
+                        option(value='da') Dansk
+                        option(value='de') Deutsch
+                        option(value='en') English
+                        option(value='es') Español
+                        option(value='el') Eλληνικά
+                        option(value='fr') Français
+                        option(value='it') Italiano
+                        option(value='hu') Magyar
+                        option(value='nl') Nederlands
+                        option(value='no') Norsk
+                        option(value='pl') Polski
+                        option(value='pt') Português
+                        option(value='fi') Suomi
+                        option(value='sv') Svenska
+                        option(value='tr') Türkçe
+                        option(value='is') Íslenska
+                        option(value='cs') Čeština
+                        option(value='ru') Русский
+                        option(value='th') ภาษาไทย
+                        option(value='zh') 中文 (简体)
+                        option(value='zh-TW') 中文 (繁體)
+                        option(value='ja') 日本語
+                        option(value='ko') 한국어
+                .row
+                  .col-md-5.col-md-offset-1
+                    .form-group
+                      label.control-label Bootstrap Version
+                      //
+                        IMPORTANT! - the "bootstrap select picker" is not compatible with jquery.validation.js, that's why we use the "default select" inside this wizard. We will try to contact the guys who are responsibble for the "bootstrap select picker" to find a solution. Thank you for your patience.
+                      select.form-control(name='cities')
+                        option(selected='', disabled='') - version -
+                        option(value='1.1') Bootstrap 1.1
+                        option(value='2.0') Bootstrap 2.0
+                        option(value='3.0') Bootstrap 3.0
+                        option(value='4.0') Bootstrap 4.0(alpha)
+                  .col-md-5
+                    .form-group
+                      label.control-label Price
+                      input.form-control(type='text', name='price', placeholder='ex: 19.00')
+              #submitTab.tab-pane
+                h2.text-center.text-space
+                  | Yuhuuu! 
+                  br
+                  small
+                    | Click on "
+                    b Finish
+                    | " to join our community
+          .footer
+            button.btn.btn-default.btn-fill.btn-wd.btn-back.pull-left.disabled(type='button', style='display: none;') Back
+            button.btn.btn-info.btn-fill.btn-wd.btn-next.pull-right(type='button') Next
+            button.btn.btn-info.btn-fill.btn-wd.btn-finish.pull-right(type='button', onclick='onFinishWizard()') Finish
+            .clearfix
+
+  #updateFormModal2.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          h4.modal-title#metricModalTitle Update Form Definition
+        .modal-body
+          form#updateFormDefinitionForm.form-horizontal(method='post' action='/org/settings/formDefinitions/#{formDefinition.formDefinitionId}')
+            .form-group
+              .col-md-10.col-md-offset-1
+                | Please select a folder which contains a <em>#{formDefinition.formDefinitionName}.fd.xml</em> file as well as {pageName}.jpg files for each page image.
+            .form-group
+              label.col-md-4.control-label Form Definition Folder
+              .col-md-8
+                .input-group
+                  input#formDefinitionFolderInputDisplay(type="text" class="form-control" readonly)
+                  label.input-group-btn
+                      span.btn.btn-default.btn-fill
+                          | Browse&hellip; 
+                          input#formDefinitionFolderInput(name="formDefinitionFolderInput" type="file" style="display: none;" webkitdirectory directory multiple)
+        .modal-footer
+          .row
+            .col-sm-6
+              div#updateMetricMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+                i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+                | Updating metrics...
+            .col-sm-6.text-right
+              button#cancelUpdateButtonwMetricButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+              button#updateFormDefinitionButton.btn.btn-fill.btn-info() Update
+
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | Form Definition (#{formDefinition.formDefinitionTitle})
+        .content
+          .row
+            .col-sm-6
+                +horizontalField('Title:', formDefinition.formDefinitionTitle)
+                +horizontalField('Name:', formDefinition.formDefinitionName)
+                +horizontalField('Description:', formDefinition.formDefinitionDescription)
+                +horizontalField('Type:', formDefinition.formDefinitionType)
+                +horizontalField('Facility:', helpers.getFacilityName(facilities, formDefinition.facilityId))
+                +horizontalField('Enabled:', formDefinition.activeIndicator ? 'Yes' : 'No' )
+                +horizontalField('Version:', formDefinition.formDefinitionVersion)
+            .col-sm-6
+          if isGraphiumAdministrator
+            .row
+              .col-sm-12.text-center
+                button#showUpdateFormDefinitionModalButton.btn.btn-info.btn-fill Update Form
+                  i.fa.fa-edit
+        .header
+        .content.content-full-width
+          ul.nav.nav-tabs(role='tablist')
+            li.active
+              a(href='#formDefinitionXmlTab', data-toggle='tab')
+                i.fa.fa-hourglass
+                |  From Definition XML
+            li
+              a(href='#pagesTab', data-toggle='tab')
+                i.fa.fa-info
+                |  Pages
+          .tab-content
+            #formDefinitionXmlTab.tab-pane.active
+              .content
+                .row
+                  .col-sm-12
+                    div#formDefinitionEditor
+            #pagesTab.tab-pane
+              .content.table-responsive.table-full-width
+                table.table.table-striped
+                  thead
+                    tr
+                      th.text-center Page Name
+                      th.text-center Min Count
+                      th.text-center Max Count
+                      th.text-center Created
+                      th.text-right Actions
+                  tbody#pagesTableBody
+                    each page in formDefinition.formDefinitionPages
+                      tr
+                        td.text-center #{page.pageName}
+                        td.text-center #{page.minCount}
+                        td.text-center #{page.maxCount}
+                        td.text-center #{page.createdAt}
+                        td.text-right
+                          a(href='#') View Page Image
+block otherscripts
+  script.
+    var formDefinition = JSON.parse(unescape("#{formDefinition ? escape(JSON.stringify(formDefinition)) : 'null'}"));
+  script
+    include ../../../util/templateHelpers.js
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.4/ace.js')
+  script
+    include formDefinition.bundle.js

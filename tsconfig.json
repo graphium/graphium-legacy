@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+      "skipLibCheck": true,
+      "noImplicitAny": false,
+      "target": "es2022",
+      "allowJs": true,
+      "module": "node16",
+      "sourceMap": true,
+      "jsx": "react",
+      "allowSyntheticDefaultImports": false,
+      "esModuleInterop": false,
+      "experimentalDecorators": true,
+      "traceResolution": false,
+      "downlevelIteration": true,
+      "outDir": "./build",
+      "lib": [
+          "es2022"
+      ],
+      "rootDirs": [
+          "./services/collector-web/",
+      ],
+      "paths": {
+        "@common/*": [
+          "./services/common/*"
+        ]
+      }
+  },
+  "tsc-alias": {
+        "verbose": true,
+        "resolveFullPaths": true,
+        "replacers": {
+        },
+        "fileExtensions": {
+            "inputGlob": "{js,jsx,mjs}",
+            "outputCheck": [
+                "js",
+                "json",
+                "jsx",
+                "mjs"
+            ]
+        }
+    },
+  "include": [
+      "./services/collector-web/lib/**/*.js",
+      "./services/collector-web/lib/**/*.ts",
+      "./services/collector-web/server.ts",
+      "./services/common/lib/**/*.js",
+      "./services/common/lib/**/*.ts",
+  ],
+  "exclude": [
+      "**/node_modules/",
+      "**/dist/",
+      "**/build/",
+  ]
+}

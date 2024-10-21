@@ -1,0 +1,49 @@
+doctype html
+html(lang='en')
+  block layoutVars
+  head
+    meta(charset='utf-8')
+    link(rel='icon', type='image/png', href='/favicon_new.ico')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge,chrome=1')
+    title #{title} - Graphium Health
+    meta(content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0', name='viewport')
+    meta(name='viewport', content='width=device-width')
+    include globalCss
+  body
+    block hidden
+    .wrapper
+      include ../components/sidebar.jade
+      .main-panel
+        include ../components/navbar.jade
+        .content
+          .container-fluid
+            // here you can write your content for the main area
+            block content
+        footer.footer
+          .container-fluid
+            p.copyright.pull-left
+              | Version #{version}
+            p.copyright.pull-right
+              - var year = new Date().getFullYear();
+              | © #{year} 
+              a(href='http://www.graphiumhealth.com') Graphium Health
+              | , Anesthesia Practice Solutions
+    script.
+      var htmlEnv = JSON.parse(unescape("#{escape(JSON.stringify(htmlEnv))}"));
+      var orgUser = JSON.parse(unescape("#{escape(JSON.stringify(orgUser))}"));
+      var indexUser = JSON.parse(unescape("#{escape(JSON.stringify(indexUser))}"));
+    script
+      include ./hubspot-identify.js
+
+  include ./hubspot
+  block modals
+  include globalScripts
+  script
+    include ../../util/templateHelpers.js
+  script.
+    var errorMessages = JSON.parse(unescape("#{escape(JSON.stringify(errorMessages))}"));
+  script
+    include ../components/navbar.js
+  script 
+    include authenticatedDefaultLayout.js
+  block otherscripts

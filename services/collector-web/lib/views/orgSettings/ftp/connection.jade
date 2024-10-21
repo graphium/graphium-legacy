@@ -1,0 +1,79 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'FTP Connection - ' + ftpSite.ftpSiteName || ftpSite.ftpSiteGuid
+  - var sidebarLink = 'orgSettings/ftpConnections'
+
+mixin horizontalField(label, value)
+  fieldset
+    .form-group
+      label.col-sm-5.control-label #{label}
+      .col-sm-7
+        | !{value}
+
+block modals
+  include ftpModal
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | FTP Connection - #{ftpSite.ftpSiteName || ftpSite.ftpSiteGuid} 
+        .content
+          .row
+            .col-sm-6
+              +horizontalField('Name:', ftpSite.ftpSiteName)
+              +horizontalField('Facility:', helpers.getFacilityName(facilities, ftpSite.facilityId))
+              +horizontalField('Created:', ftpSite.createdAt ? moment(ftpSite.createdAt).from(new Date()) : '' )
+              +horizontalField('File Filter:', ftpSite.fileFilter)
+              +horizontalField('Last Scanned:', (ftpSite.lastScannedAt ? moment(ftpSite.lastScannedAt).from(new Date()) : '') + ' <a class="scanFtpFolder" href="#" data-connection="' + ftpSite.ftpSiteGuid + '">Rescan</a>' )
+            .col-sm-6
+              +horizontalField('Protocol:', ftpSite.ftpProtocol)
+              +horizontalField('FTP Host:', ftpSite.ftpSiteConfig.ftpHost + (ftpSite.ftpSiteConfig.ftpPort ? ' (Port: ' + ftpSite.ftpSiteConfig.ftpPort + ')' : ''))
+              +horizontalField('FTP Username:', ftpSite.ftpSiteConfig.ftpUsername)
+              +horizontalField('FTP Password:', ftpSite.ftpSiteConfig.ftpPassword ? '****' : '' )
+              +horizontalField('Folder:', ftpSite.folder)
+              +horizontalField('Batch Template:', ftpSite.generateBatchTemplateGuid)
+          .row
+            .col-sm-12.text-center
+              button#showFtpModalButton.btn.btn-info.btn-fill Edit Connection
+                i.fa.fa-edit
+        .header Imported files
+        .content
+          table.table.table-striped
+            thead
+              tr
+                th.text-center File Name
+                th.text-center File ID
+                th.text-center Size
+                th.text-center Created
+                th.text-center Import Batch
+                th.text-center Actions
+            tbody
+              each file in ftpSiteFiles
+                tr
+                  //-| #{JSON.stringify(file)}
+                  td.text-center #{file.fileName}
+                  td.text-center #{file.ftpFileGuid}
+                  td.text-center #{file.fileSize}
+                  td.text-center #{moment(file.createdAt).toString()}
+                  - var generatedBatchGuids = _.compact(_.concat(file.generatedImportBatchGuid, file.generatedImportBatchGuids ? file.generatedImportBatchGuids.values : null));
+                  - var generatedBatchLinkds = _.map(generatedBatchGuids, function(guid) { return '<a href="/collector/batch/' + guid + '">' + guid + '</a>'; });
+                  if generatedBatchGuids.length > 0
+                    td.text-center !{generatedBatchLinkds.join(' ')}
+                  else
+                    td.text-center
+                      a.generateBatchButton(href='#' data-file=file.ftpFileGuid) Generate Batch
+                  td.td-actions.text-right
+                    a(href='/org/settings/ftp/connection/#{file.ftpSiteGuid}/file/#{file.ftpFileGuid}' target='_blank') View File
+block otherscripts
+  script.
+    var ftpSite = JSON.parse(unescape("#{ftpSite ? escape(JSON.stringify(ftpSite)) : 'null'}"));
+    var flows = JSON.parse(unescape("#{flows ? escape(JSON.stringify(flows)) : '[]'}"));
+  script
+    include ../../../util/templateHelpers.js
+  script
+    include ftpModal.js
+  script
+    include ../../components/scanFtpConnectionModal.js
+  script
+    include connection.js

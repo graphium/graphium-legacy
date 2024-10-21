@@ -1,0 +1,76 @@
+#ftpFolderModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby="myModalLabel")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') ×
+        h4.modal-title FTP Folder
+      .modal-body
+        form#ftpFolderForm.form-horizontal(method='post')
+          .form-group
+            label.col-md-4.control-label FTP Name
+            .col-md-8
+              input#ftpSiteName.form-control(name='ftpSiteName' type='text' placeholder='e.g. My FTP Folder')
+              span.help-block Used to identify this FTP folder in the Graphium system. eg. 'My FTP Folder'
+          .form-group
+            label.col-md-4.control-label Facility
+            .col-md-8
+              select#facilityId.selectpicker(name='facilityId', data-title='Select Facility', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='')
+                each facility in facilities
+                  option(value=facility.facilityId) #{facility.facilityName}
+          .form-group
+            label.col-md-4.control-label Folder Path
+            .col-md-8
+              input#folder.form-control(name='folder' type='text' placeholder='e.g. /path/to/folder')              
+          .form-group
+            label.col-md-4.control-label Filter
+            .col-md-8
+              input#fileFilter.form-control(name='fileFilter' type='text' placeholder='Filter')
+              span.help-block A glob or regex used to match files. If not specified, all files in this folder will be imported.
+          .form-group
+            label.col-md-4.control-label FTP Type
+            .col-md-8
+              select#ftpProtocol.selectpicker(name='ftpProtocol', data-title='Select FTP Protocol', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(value='sftp') Secure FTP (SSH)
+                option(value='ftps') FTP Secure (SSL/TLS)
+          .form-group
+            label.col-md-4.control-label FTP Host
+            .col-md-8
+              input#ftpHost.form-control(name='ftpHost' type='text')
+          .form-group
+            label.col-md-4.control-label FTP Port
+            .col-md-8
+              input#ftpPort.form-control(name='ftpPort' type='text')
+          .form-group
+            label.col-md-4.control-label FTP Username
+            .col-md-8
+              input#ftpUsername.form-control(name='ftpUsername' type='text')              
+          .form-group
+            label.col-md-4.control-label FTP Password
+            .col-md-8
+              input#ftpPassword.form-control(name='ftpPassword' type='password')              
+          .form-group
+            label.col-md-4.control-label Generate Batch Template
+            .col-md-8
+              select#generateBatchTemplateGuid.selectpicker(name='generateBatchTemplateGuid', data-title='Select Template', data-style='btn-default btn-block', data-menu-style='dropdown-blue')
+                option(data-divider='true')
+                each template in templates
+                  if template.activeIndicator
+                    option(value=template.templateGuid) #{template.templateName}
+              span.help-block The template used to generate a new batch for files downloaded from the FTP site.
+          .form-group#activeGroup.collapse.in
+            .col-md-4
+            .col-md-8
+              div.checkbox
+                input#activeCheckbox(name="active" type="checkbox")
+                label(for='activeCheckbox') Activated
+      .modal-footer
+        .row
+          .col-sm-6
+            div#modalPendingMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+              i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+              | Creating or updating FTP folder...
+          .col-sm-6.text-right
+            button#cancelModalButton.btn.btn-fill.btn-default(type='button', data-dismiss='modal') Cancel
+            button#saveOrCreateModalButton.btn.btn-fill.btn-info(type='button') #{ftpSite ? 'Save' : 'Create'}

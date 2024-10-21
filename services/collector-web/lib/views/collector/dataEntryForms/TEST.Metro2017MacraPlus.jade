@@ -1,0 +1,416 @@
+mixin metroCancellationReasonSelect(id, label, tabTo, tabBackToTab)
+    +dataEntrySelect(id, label, [
+        { label:'Anesthesia Unavailable', value:'anes_na' },
+        { label:'Difficult IV Line', value:'anes_diff_iv_ln' },
+        { label:'Unable to Intubate', value:'anes_unable_to_intub' },
+        { label:'Preop Workup/Eval Incomplete', value:'pat_mssng_lab_tst' },
+        { label:'No OR Time', value:'hosp_no_or_tm' },
+        { label:'Equipment Failure', value:'hosp_equip_fail' },
+        { label:'ICU Bed Not Available', value:'hosp_postop_icu_bed_na' },
+        { label:'Inpt Bed Not Available', value:'hosp_postop_ip_bed_na' },
+        { label:'Abnormal Labs', value:'pat_abn_lab' },
+        { label:'Patient Decision', value:'pat_rfsl_sign_consnt' },
+        { label:'Patient No Show', value:'pat_no_show' },
+        { label:'NPO Violation', value:'pat_npo_vltn' },
+        { label:'Change in Surgical Plan', value:'surgn_plan_chg' },
+        { label:'Other', value:'othr_othr' }
+    ], tabTo, tabBackToTab)
+
+.panel.panel-default
+    +dataEntryPanelHeading('patientPanelHeading', '#patientPanel', 'Patient')
+    #patientPanel.panel-collapse.collapse.in
+        .panel-body
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label First Name
+                        +dataEntryTextInput('firstName','First Name')
+                .col-sm-5
+                    .form-group
+                        label.control-label Last Name
+                        +dataEntryTextInput('lastName','Last Name')
+            if !facilityDataEntryFormSettings.autoGenerateEncounterNumber
+                .row
+                    .col-sm-10.col-sm-offset-1
+                        .form-group
+                            label.control-label Encounter Number
+                            +dataEntryTextInput('encounterNumber','Encounter Number')
+            else
+                .row
+                    .col-sm-10.col-sm-offset-1
+                        .form-group
+                            label.control-label Encounter Number
+                            .input-group
+                                | #{importBatchRecord.dataEntryData && importBatchRecord.dataEntryData.recordData && importBatchRecord.dataEntryData.recordData.encounterNumber ? importBatchRecord.dataEntryData.recordData.encounterNumber : 'Will be generated once the record is saved and relevant fields are valid.'}
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Date of Birth
+                        +dataEntryDateInput('dob', 'Date of Birth ex: MM-DD-YYYY' )
+                .col-sm-5
+                    .form-group
+                        label.control-label Gender
+                        +dataEntrySelect('gender', 'Patient Gender', [
+                                {value:'male',label:'Male'},
+                                {value:'female',label:'Female'},
+                                {value:'unknown',label:'Unknown'},
+                            ], '#procedureTimesPanel')
+.panel.panel-default
+    +dataEntryPanelHeading('procedureTimes', '#procedureTimesPanel', 'Procedure Times')
+    #procedureTimesPanel.panel-collapse.collapse
+        .panel-body
+            .row#copyDataFromPreviousRecordRow
+                .col-sm-12.text-center
+                    a#copyDataFromPreviousRecordButton(href='#' style={'margin-top':'10px','margin-bottom':'10px'}) Copy Providers and Dates from Previous Record
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Date of Service
+                        +dataEntryDateInput('dos', 'Date of Service', null, '#patientPanel', true)
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label First Case
+                        +dataEntryYesNoSelect('firstCase','ex: Yes/No')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Arrival Date
+                        +dataEntryDateInput('arrivalDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Arrival Time
+                        +dataEntryTimeInput('arrivalTime', '')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Scheduled Start Date
+                        +dataEntryDateInput('scheduledStartDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Scheduled Start Time
+                        +dataEntryTimeInput('scheduledStartTime', '')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Labor Epidural Start Date
+                        +dataEntryDateInput('laborEpiduralStartDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Labor Epidural Start Time
+                        +dataEntryTimeInput('laborEpiduralStartTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Fetal Delivery Date
+                        +dataEntryDateInput('fetalDeliveryDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Fetal Delivery Time
+                        +dataEntryTimeInput('fetalDeliveryTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia Start Date
+                        +dataEntryDateInput('anesStartDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia Start Time
+                        +dataEntryTimeInput('anesStartTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia Ready Date
+                        +dataEntryDateInput('anesReadyDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia Ready Time
+                        +dataEntryTimeInput('anesReadyTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Surgery Start Date
+                        +dataEntryDateInput('surgStartDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Surgery Start Time
+                        +dataEntryTimeInput('surgStartTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Surgery End Date
+                        +dataEntryDateInput('surgEndDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Surgery End Time
+                        +dataEntryTimeInput('surgEndTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label PACU Arrival Date
+                        +dataEntryDateInput('pacuArrivalDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label PACU Arrival Time
+                        +dataEntryTimeInput('pacuArrivalTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia End Date
+                        +dataEntryDateInput('anesEndDate', '')
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesia End Time
+                        +dataEntryTimeInput('anesEndTime','','#providerInformationPanel')
+.panel.panel-default
+    +dataEntryPanelHeading('providerInformation', '#providerInformationPanel', 'Provider Information')
+    #providerInformationPanel.panel-collapse.collapse
+        .panel-body
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label Surgeon
+                        +dataEntryProviderSelect('surgeon', 'facility', 'SURGEON' ,null, '#procedureTimesPanel')
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesiologist #1 (Responsible)
+                        +dataEntryProviderSelect('mda1', 'facility', ['MDA','CRNA'], null, null, true, true)
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Start Date
+                        +dataEntryDateInput('mda1StartDate', '')
+                .col-sm-5
+                    .form-group
+                        label.control-label Start Time
+                        +dataEntryTimeInput('mda1StartTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label End Date
+                        +dataEntryDateInput('mda1EndDate', '')
+                .col-sm-5
+                    .form-group
+                        label.control-label End Time
+                        +dataEntryTimeInput('mda1EndTime','')
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label Anesthesiologist #2 (Responsible)
+                        +dataEntryProviderSelect('mda2', 'facility', ['MDA','CRNA'], null, null, true)
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Start Date
+                        +dataEntryDateInput('mda2StartDate', '')
+                .col-sm-5
+                    .form-group
+                        label.control-label Start Time
+                        +dataEntryTimeInput('mda2StartTime','')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label End Date
+                        +dataEntryDateInput('mda2EndDate', '')
+                .col-sm-5
+                    .form-group
+                        label.control-label End Time
+                        +dataEntryTimeInput('mda2EndTime','','#locationAndProcedurePanel')    
+.panel.panel-default
+    +dataEntryPanelHeading('locationAndProcedure', '#locationAndProcedurePanel', 'Location & Procedure')
+    #locationAndProcedurePanel.panel-collapse.collapse
+        .panel-body
+            .row
+                .col-sm-4.col-sm-offset-1
+                    .form-group
+                        label.control-label Call
+                        +dataEntrySelect('call', 'Call', [
+                                {value:'LP OB',label:'LP OB'},
+                                {value:'LP G',label:'LP G'},
+                                {value:'LP 7',label:'LP 7'},
+                                {value:'PHR 1',label:'PHR 1'},
+                                {value:'PHR 2',label:'PHR 2'},
+                                {value:'MCL OB',label:'MCL OB'},
+                                {value:'MCL G',label:'MCL G'},
+                                {value:'MCL 7',label:'MCL 7'},
+                                {value:'PHD OB',label:'PHD OB'},
+                                {value:'PHD G',label:'PHD G'},
+                                {value:'PHD 7',label:'PHD 7'},
+                                {value:'MCA OB',label:'MCA OB'},
+                                {value:'MCA G',label:'MCA G'},
+                                {value:'MCA T',label:'MCA T'},
+                                {value:'CMC OB',label:'CMC OB'},
+                                {value:'TGH',label:'TGH'},
+                                {value:'NE',label:'NE'},
+                                {value:'NONE',label:'None'}
+                            ],null,'#providerInformationPanel')
+                .col-sm-3
+                    .form-group
+                        label.control-label OR Location #1
+                        +dataEntrySurgeryLocationSelect('orLocn')
+                .col-sm-3
+                    .form-group
+                        label.control-label OR Location #2
+                        +dataEntrySurgeryLocationSelect('orLocn2')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Trauma
+                        +dataEntryYesNoSelect('traumaInd','ex: Yes/No')
+                .col-sm-5
+                    .form-group
+                        label.control-label ASA
+                        +dataEntrySelect('asa', 'ASA', [
+                                {value:'1',label:'1'},
+                                {value:'2',label:'2'},
+                                {value:'3',label:'3'},
+                                {value:'4',label:'4'},
+                                {value:'5',label:'5'},
+                                {value:'6',label:'6'},
+                                {value:'1E',label:'1E'},
+                                {value:'2E',label:'2E'},
+                                {value:'3E',label:'3E'},
+                                {value:'4E',label:'4E'},
+                                {value:'5E',label:'5E'}
+                            ])
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Patient Type
+                        +dataEntrySelect('patientType', 'Select Amb/IP', [
+                                {value:'amb',label:'Ambulatory (Amb)'},
+                                {value:'inp',label:'Inpatient (IP)'}
+                            ])
+                .col-sm-5
+                    .form-group
+                        label.control-label Primary Anesthetic
+                        +dataEntrySelect('primaryAnes', 'Select from List', [
+                                {value:'gen',label:'General'},
+                                {value:'mac',label:'MAC'},
+                                {value:'spinal',label:'Spinal'},
+                                {value:'epidural',label:'Epidural'},
+                                {value:'laborEpidural',label:'Labor Epidural'},
+                            ],'#macraQualityTab')
+.panel.panel-default
+    +dataEntryPanelHeading('macraQuality', '#macraQualityTab', 'MACRA Quality')
+    #macraQualityTab.panel-collapse.collapse
+        .panel-body
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label PreOp OSA
+                        +dataEntryYesNoReasonSelect('preOpOsa','ex: Yes/No w/ Reason',null,'#locationAndProcedurePanel')
+                .col-sm-5
+                    .form-group
+                        label.control-label PreOp GERD
+                        +dataEntryYesNoReasonSelect('preOpGerd', 'ex: Yes/No w/ Reason')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label PreOp Alcohol/Tobacco
+                        +dataEntryYesNoReasonSelect('preOpAlcTob','ex: Yes/No w/ Reason')
+                .col-sm-5
+                    .form-group
+                        label.control-label PreOp Glaucoma
+                        +dataEntryYesNoReasonSelect('preOpGlaucoma', 'ex: Yes/No w/ Reason')
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label PreOp PONV
+                        +dataEntryYesNoReasonSelect('preOpPonv','ex: Yes/No w/ Reason')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Current Meds in Record
+                        +dataEntryYesNoReasonSelect('meds','ex: Yes/No w/ Reason')
+                .col-sm-5
+                    .form-group
+                        label.control-label Safety Checklist Used
+                        +dataEntryYesNoSelect('slu','ex: Yes/No')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label PONV risk 3 of 5, 2 drugs
+                        +dataEntryYesNoNaSelect('ponvRisk','ex: Yes/No w/ Reason')
+                .col-sm-5
+                    .form-group
+                        label.control-label Lung Protection Ventilation
+                        +dataEntryYesNoNaSelect('lungProtectionVentilation','ex: Yes/No/NA')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Handoff Protocol Used
+                        +dataEntryYesNoReasonSelect('handoff', 'ex: Yes/No w/ Reason')
+                .col-sm-5
+                    .form-group
+                        label.control-label Transferred To
+                        +dataEntrySelect('transferredTo', 'ex: PACU/ICU', [
+                                {value:'pacu',label:'PACU'},
+                                {value:'icu',label:'ICU'},
+                            ])
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label PACU Pain
+                        +dataEntrySelect('pacuPain', 'Select from List', [
+                                {value:'0',label:'0'},
+                                {value:'1',label:'1'},
+                                {value:'2',label:'2'},
+                                {value:'3',label:'3'},
+                                {value:'4',label:'4'},
+                                {value:'5',label:'5'},
+                                {value:'6',label:'6'},
+                                {value:'7',label:'7'},
+                                {value:'8',label:'8'},
+                                {value:'9',label:'9'},
+                                {value:'10',label:'10'},
+                                {value:'U',label:'Unknown'}
+                            ],'#adverseEventsTab')
+.panel.panel-default
+    +dataEntryPanelHeading('adverseEvents', '#adverseEventsTab', 'Adverse Events')
+    #adverseEventsTab.panel-collapse.collapse
+        .row
+            .col-sm-10.col-sm-offset-1
+                .form-group
+                    label.control-label Adverse Events
+                    +dataEntryYesNoSelect('complicationsIndicated', 'Yes/No, Select from List',null,'#macraQualityTab')
+        .row
+            .col-sm-5.col-sm-offset-1
+                .form-group
+                    label.control-label Adverse Event #1
+                    +complicationReasonSelect('complication1', 'Select from List')
+            .col-sm-5
+                .form-group
+                    label.control-label Adverse Event #2
+                    +complicationReasonSelect('complication2', 'Select from List','#delayTab')
+.panel.panel-default
+    +dataEntryPanelHeading('delayHeading', '#delayTab', 'Delays')
+    #delayTab.panel-collapse.collapse
+        .panel-body
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Delay
+                        +dataEntryYesNoSelect('delayIndicated', 'Select from List',null,'#adverseEventsTab')
+                .col-sm-5
+                    .form-group
+                        label.control-label Delay Reason
+                        +delayReasonSelect('delayReason', 'Select Delay Reason', '#cancellationTab')
+.panel.panel-default
+    +dataEntryPanelHeading('cancellationHeading', '#cancellationTab', 'Same Day Cancellation')
+    #cancellationTab.panel-collapse.collapse
+        .panel-body
+            .row
+                .col-sm-10.col-sm-offset-1
+                    .form-group
+                        label.control-label Same Day Cancellation
+                        +dataEntryYesNoSelect('sameDayCancellation', 'Select from List',null,'#delayTab')
+            .row
+                .col-sm-5.col-sm-offset-1
+                    .form-group
+                        label.control-label Cancellation Reason #1
+                        +metroCancellationReasonSelect('cancellationReason1', 'Select from List')
+                .col-sm-5
+                    .form-group
+                        label.control-label Cancellation Reason #2
+                        +metroCancellationReasonSelect('cancellationReason2', 'Select from List')

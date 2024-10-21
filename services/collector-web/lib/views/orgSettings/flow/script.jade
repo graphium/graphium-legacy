@@ -1,0 +1,100 @@
+extends ../../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Flow Script ' + flow.flowName || flow.flowGuid
+  - var sidebarLink = 'orgSettings/flowScripts'
+
+mixin horizontalField(label, value)
+  fieldset
+    .form-group
+      label.col-sm-5.control-label #{label}
+      .col-sm-7
+        | #{value}
+
+block modals
+  include scriptModal
+  include triggerScheduledFlowModal
+block content
+  .row
+    .col-md-12
+      .card
+        .header
+          | Flow Script #{flow.flowName || flow.flowGuid} 
+        .content
+          .row
+            .col-sm-6
+              +horizontalField('Name:', flow.flowName)
+              if flow.flowDescription
+                +horizontalField('Description:', flow.flowDescription)
+              +horizontalField('Flow ID:', flow.flowGuid)
+              +horizontalField('Flow Type:', flow.flowType)
+              if flow.systemFlowScript
+                +horizontalField('Template: ', flow.systemFlowScript)
+              +horizontalField('Facility:', helpers.getFacilityName(facilities, flow.facilityId))
+              +horizontalField('Stream Type:', helpers.getStreamType(flow.streamType))
+              +horizontalField('Enabled:', flow.active ? 'Yes' : 'No' )
+              +horizontalField('Message Types:', helpers.getMessageTypeDisplay(flow) )
+              +horizontalField('Global:', flow.systemGlobal ? 'Yes' : 'No' )
+            .col-sm-6
+              if flow.flowConfig
+                - var systemFlow = _.find(systemFlowScripts, {systemFlowScriptName:flow.systemFlowScript})
+                each configValue, index in flow.flowConfig
+                  - var nameAndValue = helpers.getFlowConfigDisplayNameAndValue(systemFlow, index, configValue)
+                  +horizontalField(nameAndValue.name, nameAndValue.value)
+          if !flow.systemGlobal || isGraphiumAdministrator
+            .row
+              .col-sm-12.text-center
+                  button#showFlowModalButton.btn.btn-info.btn-fill(style={'margin-right':'5px','margin-left':'5px'}) Edit Flow
+                    i.fa.fa-edit
+                  if flow.streamType == 'scheduled'
+                    button#showTriggerScheduledFlowModalButton.btn.btn-info.btn-fill(style={'margin-right':'5px','margin-left':'5px'}) Trigger Scheduled Flow
+                      i.fa.fa-play
+        .header
+        .content.content-full-width
+          ul.nav.nav-tabs(role='tablist')
+            li.active
+              a(href='#messages', data-toggle='tab')
+                i.fa.fa-hourglass
+                |  Messages
+            li(role='presentation')
+              a(href='#script', data-toggle='tab')
+                i.fa.fa-info
+                |  Script
+          .tab-content
+            #messages.tab-pane.active
+              .row
+                .col-sm-6
+                  div#refreshingMessagesMessage.font-icon-container(style={'margin-top':'4px','visibility':'hidden'})
+                    i.fa.fa-spin.fa-circle-o-notch(style={'margin-left':'6px','margin-right':'6px'})
+                    | Loading messages...
+                .col-sm-6.text-right
+                  button#refreshMessagesButton.btn.btn-fill.btn-info Refresh Messages
+                    i.fa.fa-refresh
+              .content.table-responsive.table-full-width
+                table.table.table-striped
+                  thead
+                    tr
+                      th.text-center Message ID
+                      th.text-center Message Type
+                      th.text-center Facility
+                      th.text-center Created
+                      th.text-center Processing Status
+                      th.text-right Actions
+                  tbody#messagesTableBody
+            #script.tab-pane
+              .content
+                .row
+                  .col-sm-12
+                    div#scriptEditor
+block otherscripts
+  script.
+    var flow = JSON.parse(unescape("#{escape(JSON.stringify(flow))}"));
+    var systemFlowScripts = JSON.parse(unescape("#{escape(JSON.stringify(systemFlowScripts))}"));
+  script
+    include ../../../util/templateHelpers.js
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.4/ace.js')
+  script
+    include scriptModal.js
+  script
+    include triggerScheduledFlowModal.js
+  script
+    include script.js

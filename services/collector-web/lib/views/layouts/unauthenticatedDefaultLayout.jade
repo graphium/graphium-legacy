@@ -1,0 +1,41 @@
+doctype html
+html(lang='en')
+  block layoutVars
+  head
+    meta(charset='utf-8')
+    link(rel='icon', type='image/png', href='/favicon_new.ico')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge,chrome=1')
+    title #{title}  - Graphium Health
+    meta(content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0', name='viewport')
+    meta(name='viewport', content='width=device-width')
+    include globalCss
+  body
+    .wrapper
+      //- include ./components/sidebar.jade
+      .main-panel
+        nav.navbar.navbar-default
+          .container-fluid
+            .navbar-header
+              button.navbar-toggle(type='button', data-toggle='collapse')
+                span.sr-only Toggle navigation
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+            .collapse.navbar-collapse
+        .content
+          .container-fluid
+            // here you can write your content for the main area
+            block content
+        footer.footer
+          .container-fluid
+            nav.pull-left
+            p.copyright.pull-right
+              - var year = new Date().getFullYear();
+              | © #{year} 
+              a(href='http://www.graphiumhealth.com') Graphium Health
+              | , Anesthesia Practice Solutions
+  block modals
+  include globalScripts
+  script.
+    var errorMessages = JSON.parse(unescape("#{escape(JSON.stringify(errorMessages))}"));
+  block otherscripts

@@ -1,0 +1,11 @@
+extends ../layouts/authenticatedDefaultLayout
+block layoutVars
+  - var title = 'Data Entry Errors'
+  - var sidebarLink = 'dashboards/dataEntryErrors'
+
+block content
+    #root
+
+block otherscripts
+    script
+        include dataEntryErrors.bundle.js
