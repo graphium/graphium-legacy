@@ -1,3 +1,4 @@
+/// <reference path="../page.d.ts" />
 
 var currentData;
 

@@ -26,9 +26,6 @@ import Auth0Strategy = require('passport-auth0');
 import * as _ from 'lodash';
 import { EnvironmentConfig } from '@common/lib/config/EnvironmentConfig';
 
-
-
-
 let app:any;
 
 async function main() {

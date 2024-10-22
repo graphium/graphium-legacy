@@ -1,3 +1,5 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = 'PP24';
 var dataEntryFormDefinitionVersion = '1';
 

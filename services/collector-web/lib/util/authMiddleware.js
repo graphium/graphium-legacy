@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var OrgUserDAO = require('../dao/org/OrgUserDAO.js');
+var OrgUserDAO = require('@common/lib/dao/org/OrgUserDAO.js');
 
 var roleGroups = require('./roleGroups.js');
 

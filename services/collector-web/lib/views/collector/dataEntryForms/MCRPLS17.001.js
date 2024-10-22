@@ -1,3 +1,4 @@
+/// <reference path="../recordDataEntry.d.ts" />
 
 var dataEntryFormDefinitionName = 'MCRPLS17';
 var dataEntryFormDefinitionVersion = '1';

@@ -1,19 +1,19 @@
 var express = require('express');
 var auth = require('../util/authMiddleware');
 var router = express.Router();
-var ImportBatchDAO = require('../dao/ImportBatchDAO.js');
+var ImportBatchDAO = require('@common/lib/dao/ImportBatchDAO.js');
 var multer = require('multer');
 var autoReap = require('multer-autoreap');
 var upload = multer()
 var templateHelpers = require('../util/templateHelpers');
 var roleGroups = require('../util/roleGroups');
 var _ = require('lodash');
-var OrgUserDAO = require('../dao/org/OrgUserDAO.js');
-var FacilityDAO = require('../dao/org/FacilityDAO.js');
-var ProviderDAO = require('../dao/org/ProviderDAO.js');
-var ImportEventDAO = require('../dao/ImportEventDAO.js');
-var ExternalWebFormDAO = require('../dao/ExternalWebFormDAO');
-var FlowDAO = require('../dao/FlowDAO.js');
+var OrgUserDAO = require('@common/lib/dao/org/OrgUserDAO.js');
+var FacilityDAO = require('@common/lib/dao/org/FacilityDAO.js');
+var ProviderDAO = require('@common/lib/dao/org/ProviderDAO.js');
+var ImportEventDAO = require('@common/lib/dao/ImportEventDAO.js');
+var ExternalWebFormDAO = require('@common/lib/dao/ExternalWebFormDAO');
+var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var Promise = require('bluebird');
 
 router.get('/externalWebForm/:externalWebFormGuid/records.json',
@@ -93,7 +93,7 @@ function(req, res) {
       ImportBatchDAO.getBatchByGuid(importBatchGuid),
       ImportBatchDAO.getBatchRecord(importBatchGuid, recordIndex)
     ])
-    .spread(function(importBatchResult, importBatchRecordResult) {
+    .then(function([importBatchResult, importBatchRecordResult]) {
         importBatch = importBatchResult;
         importBatchRecord = importBatchRecordResult;
 

@@ -1,3 +1,5 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = 'Metro2019MacraPlus';
 var dataEntryFormDefinitionVersion = '1';
 

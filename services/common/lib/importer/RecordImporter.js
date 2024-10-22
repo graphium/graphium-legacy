@@ -2,13 +2,6 @@ var _ = require('lodash');
 var graphium = require('@graphiumhealth/graphium-sdk');
 var GraphiumServiceUtils = require('./GraphiumServiceUtils').default;
 var Promise = require('bluebird');
-var EncounterFormPqrsEval = require('./EncounterFormPqrsEval.js');
-var EncounterFormMacraEval2017 = require('./EncounterFormMacraEval2017');
-var EncounterFormMacraEval2018 = require('./EncounterFormMacraEval2018');
-var EncounterFormMacraEval2019 = require('./macra2019/EncounterFormMacraEval2019').default;
-var EncounterFormMacraEval2020 = require('./macra2020/EncounterFormMacraEval2020').default;
-var EncounterFormMacraEval2021 = require('./macra2021/EncounterFormMacraEval2021').default;
-var EncounterFormMacraEval2022 = require('./macra2022/EncounterFormMacraEval2022').default;
 var EncounterFormMacraEval2023 = require('./macra2023/EncounterFormMacraEval2023').default;
 var EncounterFormMacraEval2024 = require('./macra2024/EncounterFormMacraEval2024').default;
 
@@ -936,6 +929,7 @@ RecordImporter.prototype.executeSplitMapping = function (record, inputValue, enc
   var promiseIndex = -1;
   if(modelColumnMapping.forEach) {
     console.log(' - Found forEach mappings.');
+    // @ts-ignore
     forEachPromise = Promise.mapSeries(inputValues, function(v) {
       console.log('   - Executing forEach mapping with value: ' + v);
       return _this._executeMapping(record, _.trim(v), encounter, encounterForm, modelDefinition, modelColumnMapping.forEach, mappingName, promiseIndex++);
@@ -945,6 +939,7 @@ RecordImporter.prototype.executeSplitMapping = function (record, inputValue, enc
   var byIndexPromise = Promise.resolve();
   if(modelColumnMapping.byIndex) {
     console.log(' - Found byIndex mappings.');
+    // @ts-ignore
     byIndexPromise = Promise.mapSeries(modelColumnMapping.byIndex, function(byIndexMapping) {
       var index = byIndexMapping.index;
       console.log('   - Executing byIndex mapping for index: ' + index);

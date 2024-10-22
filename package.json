@@ -3,12 +3,25 @@
     "version": "1.5.0",
     "description": "This is the migrated services repo for legacy services. This was created during the vultr migration.",
     "scripts": {
+      "npm-run-all": "npm-run-all",
       "tsc": "tsc",
+      "tsc:watch": "tsc --watch",
       "tsc-alias": "tsc-alias",
+      "tsc-alias:watch": "tsc-alias --watch",
       "tsx": "tsx",
-      "build": "tsc && tsc-alias",
-      "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-      "run:app": "tsx watch services/app/server.ts"
+
+      
+      "build": "run-s clean build:*",
+      "clean": "rm -rf build",
+      "build:typescript": "run-p tsc tsc-alias",
+      "build:static": "copyfiles -u 1 services/*/package*.json ./build",
+
+      "watch:javascript": "run-s tsc:watch tsc-alias:watch",
+      "watch": "run-p watch:*",
+
+      "old:build": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+
+      "run:app": "tsx watch services/collector-web/server.ts"
     },
     "devDependencies": {
       "@types/bootstrap": "3.3.33",
@@ -56,6 +69,10 @@
       "@types/xml2js": "0.4.5",
       "@types/xmldom": "0.1.29",
       "@types/yargs": "6.6.0",
+      "concurrently": "8.2.2",
+      "copyfiles": "2.4.1",
+      "copy-and-watch": "0.1.8",
+      "npm-run-all": "4.1.5",
       "typescript": "4.9.4",
       "tsc-alias": "1.8.10",
       "tsx": "4.19.1"

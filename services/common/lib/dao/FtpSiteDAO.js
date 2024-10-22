@@ -189,7 +189,7 @@ function createFileForFtpSite(ftpSiteGuid, ftpFile, ftpFileDataBuffer, tl) {
   if(tl) tl.logInfo('CRTE_FILE_FOR_STE_START','Creating FTP file.');
 
   return Promise.all([getFtpSite(ftpSiteGuid), getFilesByChecksum(ftpSiteGuid, ftpFile.checksum), getFilesByName(ftpSiteGuid, ftpFile.fileName)])
-  .spread(function(ftpSiteResult, filesMatchingChecksum, filesMatchingName) {
+  .then(function([ftpSiteResult, filesMatchingChecksum, filesMatchingName]) {
 
     if(tl) tl.logInfo('CRTE_FILE_GET_DATA','Retrieved ftp site, files by checksum and by name.', {
       generateBatchFlowGuid: ftpSiteResult && ftpSiteResult.ftpSiteConfig ? ftpSiteResult.ftpSiteConfig.generateBatchFlowGuid : null

@@ -1,32 +1,31 @@
 var express = require('express');
 var auth = require('../util/authMiddleware');
 var router = express.Router();
-var ImportBatchDAO = require('../dao/ImportBatchDAO.js');
+var ImportBatchDAO = require('@common/lib/dao/ImportBatchDAO.js');
 var multer = require('multer');
 var autoReap = require('multer-autoreap');
 var upload = multer()
 var uuid = require('uuid');
 var AWS = require('aws-sdk');
-var s3 = require('../util/s3Util.js');
+var s3 = require('@common/lib/util/s3Util.js');
 var templateHelpers = require('../util/templateHelpers');
 var roleGroups = require('../util/roleGroups');
 var _ = require('lodash');
-var OrgUserDAO = require('../dao/org/OrgUserDAO.js');
-var FacilityDAO = require('../dao/org/FacilityDAO.js');
-var ProviderDAO = require('../dao/org/ProviderDAO.js');
-var ValueSetDAO = require('../dao/org/ValueSetDAO.js');
-var ImportEventDAO = require('../dao/ImportEventDAO.js');
-var ImportFaxLineDAO = require('../dao/ImportFaxLineDAO.js');
-var DataEntryFormDefinitionDAO = require('../dao/DataEntryFormDefinitionDAO');
-var ExternalWebFormDAO = require('../dao/ExternalWebFormDAO');
-var FtpSiteDAO = require('../dao/FtpSiteDAO.js');
-var ImportBatchTemplateDAO = require('../dao/ImportBatchTemplateDAO.js');
-var FlowDAO = require('../dao/FlowDAO.js');
-var Promise = require('bluebird');
+var OrgUserDAO = require('@common/lib/dao/org/OrgUserDAO.js');
+var FacilityDAO = require('@common/lib/dao/org/FacilityDAO.js');
+var ProviderDAO = require('@common/lib/dao/org/ProviderDAO.js');
+var ValueSetDAO = require('@common/lib/dao/org/ValueSetDAO.js');
+var ImportEventDAO = require('@common/lib/dao/ImportEventDAO.js');
+var ImportFaxLineDAO = require('@common/lib/dao/ImportFaxLineDAO.js');
+var DataEntryFormDefinitionDAO = require('@common/lib/dao/DataEntryFormDefinitionDAO');
+var ExternalWebFormDAO = require('@common/lib/dao/ExternalWebFormDAO');
+var FtpSiteDAO = require('@common/lib/dao/FtpSiteDAO.js');
+var ImportBatchTemplateDAO = require('@common/lib/dao/ImportBatchTemplateDAO.js');
+var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var moment = require('moment');
-var InterfaxInbound = require('../services/interfax/InterfaxInbound.js');
-var IndexOrganizationDAO = require('../dao/index/IndexOrganizationDAO');
-var TransactionLog = require('../log/TransactionLog');
+var InterfaxInbound = require('@common/lib/services/interfax/InterfaxInbound.js');
+var IndexOrganizationDAO = require('@common/lib/dao/index/IndexOrganizationDAO');
+var TransactionLog = require('@common/lib/log/TransactionLog');
 
 /* GET user profile. */
 router.get('/', auth.ensureAuthenticatedOrg(), function(req, res, next) {
@@ -106,7 +105,7 @@ function(req, res, next) {
         FacilityDAO.getFacilities(req.session.org),
         ImportBatchTemplateDAO.getTemplatesForOrg(req.session.org)
     ])
-    .spread(function(faxLines, facilities, templates) {
+    .then(function([faxLines, facilities, templates]) {
         res.render('collector/faxLines', {
             faxLines: faxLines,
             facilities: facilities,
@@ -203,7 +202,7 @@ function(req, res) {
         ImportFaxLineDAO.getFax(importFaxGuid),
         ImportFaxLineDAO.getFaxPdf(importFaxGuid)
     ])
-    .spread(function(faxLine, fax, faxPdf) {
+    .then(function([faxLine, fax, faxPdf]) {
         console.log('Retrieved FTP data.');
         
         if(faxLine.orgInternalName != req.session.org) {
@@ -333,7 +332,7 @@ function(req, res, next) {
         FacilityDAO.getFacilities(req.session.org),
         ExternalWebFormDAO.getFormDefinitionsForOrg(req.session.org)
     ])
-    .spread(function(facilitiesResult, externalWebFormDefinitionsResults) {
+    .then(function([facilitiesResult, externalWebFormDefinitionsResults]) {
         facilities = facilitiesResult;
         externalWebFormDefinitions = externalWebFormDefinitionsResults;
 
@@ -366,7 +365,7 @@ function(req, res, next) {
         ImportBatchTemplateDAO.getTemplatesForOrg(req.session.org),
         FacilityDAO.getFacilities(req.session.org)
     ])
-    .spread(function(usersResult, assignedBatchesResult, templatesResult, facilitiesResult) {
+    .then(function([usersResult, assignedBatchesResult, templatesResult, facilitiesResult]) {
         dataEntryUsers = usersResult;
         assignedBatches = assignedBatchesResult;
         templates = templatesResult;
@@ -382,7 +381,7 @@ function(req, res, next) {
             return Promise.resolve([ [], [] ]);
         }
     })
-    .spread(function(incompleteBatches, completeBatches) {
+    .then(function([incompleteBatches, completeBatches]) {
         res.render('collector/batches', {
             assignedBatches: assignedBatches,
             dataEntryUsers: dataEntryUsers,
@@ -494,7 +493,7 @@ function(req, res, next) {
         ImportBatchDAO.getBatchByGuid(req.params.importBatchGuid),
         ImportBatchTemplateDAO.getTemplate(req.params.templateGuid)
     ])
-    .spread(function(batchResult, templateResult) {
+    .then(function([batchResult, templateResult]) {
         batch = batchResult;
         template = templateResult;
 
@@ -694,7 +693,7 @@ function(req, res, next) {
         OrgUserDAO.getUsersByRoles(req.session.org, ['DATA_ENTRY_ADMIN','DATA_ENTRY_SUPERVISOR','DATA_ENTRY_CLERK']),
         FacilityDAO.getFacilities(req.session.org),
         ImportBatchTemplateDAO.getTemplatesForOrg(req.session.org)
-    ]).spread(function(usersResult, facilitiesResult, importBatchTemplatesResult) {
+    ]).then(function([usersResult, facilitiesResult, importBatchTemplatesResult]) {
         facilities = facilitiesResult;
         dataEntryUsers = usersResult;
         importBatchTemplates = importBatchTemplatesResult;

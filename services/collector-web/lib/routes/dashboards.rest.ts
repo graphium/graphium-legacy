@@ -3,7 +3,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import * as xl from 'excel4node';
 import * as Elasticsearch from "elasticsearch";
 import * as es from "@common/lib/util/esUtil";
 

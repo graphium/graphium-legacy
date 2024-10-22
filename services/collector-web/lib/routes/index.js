@@ -5,9 +5,9 @@ var auth = require('../util/authMiddleware');
 var _ = require('lodash');
 var graphium = require('@graphiumhealth/graphium-sdk');
 
-var IndexUserDAO = require('../dao/index/IndexUserDAO');
-var AuditLogDAO = require('../dao/AuditLogDAO');
-var OrgUserDao = require('../dao/org/OrgUserDAO');
+var IndexUserDAO = require('@common/lib/dao/index/IndexUserDAO');
+var AuditLogDAO = require('@common/lib/dao/AuditLogDAO');
+var OrgUserDao = require('@common/lib/dao/org/OrgUserDAO');
 
 
 var env = {

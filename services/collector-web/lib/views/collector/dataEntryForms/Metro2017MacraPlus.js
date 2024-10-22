@@ -1,7 +1,11 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = 'Metro2017MacraPlus';
 var dataEntryFormDefinitionVersion = '1';
 
-// Metro2017MacraPlus Form
+/**
+ * @type {Record<string, { validator?: (value: string) => string | undefined }>}
+ */
 var formFields = {
     // Patient Tab
     firstName: { validator: dataEntryValidator('notEmpty') },

@@ -2,17 +2,16 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "npm: watch:javascript",
 			"type": "npm",
-			"script": "build:watch",
+			"script": "watch:javascript",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": [
 				"$tsc-watch"
-			],
-			"label": "npm: build:watch",
-			"detail": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")"
+			]
 		}
 	]
 }

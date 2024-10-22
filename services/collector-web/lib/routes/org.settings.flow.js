@@ -1,7 +1,7 @@
 var express = require('express');
 var auth = require('../util/authMiddleware');
 var router = express.Router();
-var ImportBatchDAO = require('../dao/ImportBatchDAO.js');
+var ImportBatchDAO = require('@common/lib/dao/ImportBatchDAO.js');
 var multer = require('multer');
 var autoReap = require('multer-autoreap');
 var upload = multer();
@@ -11,18 +11,18 @@ var templateHelpers = require('../util/templateHelpers');
 var roleGroups = require('../util/roleGroups');
 var _ = require('lodash');
 var uuid = require('uuid');
-var OrgUserDAO = require('../dao/org/OrgUserDAO.js');
-var FacilityDAO = require('../dao/org/FacilityDAO.js');
-var ProviderDAO = require('../dao/org/ProviderDAO.js');
-var ImportEventDAO = require('../dao/ImportEventDAO.js');
-var ImportFaxLineDAO = require('../dao/ImportFaxLineDAO.js');
-var FlowDAO = require('../dao/FlowDAO.js');
+var OrgUserDAO = require('@common/lib/dao/org/OrgUserDAO.js');
+var FacilityDAO = require('@common/lib/dao/org/FacilityDAO.js');
+var ProviderDAO = require('@common/lib/dao/org/ProviderDAO.js');
+var ImportEventDAO = require('@common/lib/dao/ImportEventDAO.js');
+var ImportFaxLineDAO = require('@common/lib/dao/ImportFaxLineDAO.js');
+var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var Promise = require('bluebird');
 var moment = require('moment');
-var InterfaxInbound = require('../services/interfax/InterfaxInbound.js');
-var InboundMessageInstanceDAO = require('../dao/InboundMessageInstanceDAO.js');
-var FlowCoreServicesPrivate = require('../services/FlowCoreServicesPrivate');
-var MessageRequestService = require('../dao/MessageRequestService');
+var InterfaxInbound = require('@common/lib/services/interfax/InterfaxInbound.js');
+var InboundMessageInstanceDAO = require('@common/lib/dao/InboundMessageInstanceDAO.js');
+var FlowCoreServicesPrivate = require('@common/lib/services/FlowCoreServicesPrivate');
+var MessageRequestService = require('@common/lib/dao/MessageRequestService');
 
 /* GET user profile. */
 router.get('/scripts', auth.ensureAuthenticatedOrg({roles:{some:['ORG_ADMIN','DATA_ENTRY_ADMIN']}}),
@@ -174,9 +174,9 @@ function getFlowConfigParameterType(flowOrSystemScript, configName) {
     
     var parameter;
     if(flowOrSystemScript.parameters) {
-        var parameter = _.find(flowOrSystemScript.parameters, {name:configName});
+        parameter = _.find(flowOrSystemScript.parameters, {name:configName});
     } else if(flowOrSystemScript.systemFlowScriptContent && flowOrSystemScript.systemFlowScriptContent.parameters) {
-        var parameter = _.find(flowOrSystemScript.systemFlowScriptContent.parameters, {name:configName});
+        parameter = _.find(flowOrSystemScript.systemFlowScriptContent.parameters, {name:configName});
     }
 
     if( parameter )

@@ -1,3 +1,5 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = importBatch.dataEntryFormDefinitionName == 'MCRPLS21.001' ? 'MCRPLS21' : 'MCRSMP21';
 var dataEntryFormDefinitionVersion = '1';
 

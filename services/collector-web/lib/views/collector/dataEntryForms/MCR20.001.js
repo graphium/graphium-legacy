@@ -1,7 +1,12 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = importBatch.dataEntryFormDefinitionName == 'MCRPLS20.001' ? 'MCRPLS20' : 'MCRSMP20';
 var dataEntryFormDefinitionVersion = '1';
 
 // Metro2017MacraPlus Form
+/**
+ * @type {Record<string, { validator?: (value: string) => string | undefined }>}
+ */
 var formFields = {
     // Patient Tab
     firstName: { validator: dataEntryValidator('notEmpty') },

@@ -2,8 +2,8 @@ var express = require('express');
 var passport = require('passport');
 var auth = require('../util/authMiddleware');
 var router = express.Router();
-var TransactionLog = require('../log/TransactionLog.js');
-var IndexUserDAO = require('../dao/index/IndexUserDAO.js');
+var TransactionLog = require('@common/lib/log/TransactionLog.js');
+var IndexUserDAO = require('@common/lib/dao/index/IndexUserDAO.js');
 
 /* GET user profile. */
 router.get('/', auth.ensureAuthenticatedOrg(), function(req, res, next) {

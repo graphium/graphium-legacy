@@ -1,4 +1,4 @@
-var ServiceRequest = require('./ServiceRequest');
+const { ServiceRequest } = require('./ServiceRequest');
 
 function TagService( orgName, username, password ) 
 {

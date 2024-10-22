@@ -1,4 +1,4 @@
-var ServiceRequest = require('./ServiceRequest');
+const { ServiceRequest } = require('./ServiceRequest');
 
 function SearchService( orgName, username, password ) 
 {

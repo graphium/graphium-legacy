@@ -1,3 +1,5 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = 'PqrsReady';
 var dataEntryFormDefinitionVersion = '1';
 

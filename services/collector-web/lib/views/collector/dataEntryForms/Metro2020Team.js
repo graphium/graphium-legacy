@@ -1,3 +1,5 @@
+/// <reference path="../recordDataEntry.d.ts" />
+
 var dataEntryFormDefinitionName = 'Metro2020Team';
 var dataEntryFormDefinitionVersion = '1';
 
