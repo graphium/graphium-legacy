@@ -8,10 +8,10 @@ AbgRequest.abgQcdrTokenMap = {};
 
 
 AbgRequest.prototype.getBaseUri = function() {
-  if(!process.env.ABG_SERVICE_URI) {
+  if(!EnvironmentConfig.getProperty('abg','ABG_SERVICE_URI')) {
     throw new Error('Unable to complete ABG request, ABG_SERVICE_URI not defined.');
   }
-  return process.env.ABG_SERVICE_URI;
+  return EnvironmentConfig.getProperty('abg','ABG_SERVICE_URI');
 }
 
 AbgRequest.prototype._generateToken = function(username, password) {

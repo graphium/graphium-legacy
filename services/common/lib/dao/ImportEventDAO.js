@@ -206,7 +206,7 @@ function getEvent(importEventGuid) {
     return new Promise(function(resolve,reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_EVENT,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_EVENT'),
             KeyConditionExpression: "importEventGuid = :importEventGuid",
             ExpressionAttributeValues: {
                 ":importEventGuid": importEventGuid
@@ -224,8 +224,8 @@ function getEvent(importEventGuid) {
 function getEventsForRecord(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_EVENT,
-            IndexName: process.env.DDB_TABLE_IMPORT_EVENT_IMPORT_BATCH_GUID_RECORD_INDEX_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_EVENT'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_EVENT_IMPORT_BATCH_GUID_RECORD_INDEX_IDX'),
             KeyConditionExpression: "importBatchGuidRecordIndex = :importBatchGuidRecordIndex",
             ExpressionAttributeValues: {
                 ":importBatchGuidRecordIndex": importBatchGuid + ':' + recordIndex
@@ -289,12 +289,12 @@ function createEvent(importEvent, tl) {
     }
 
     if(tl) tl.logInfo('STR_EVT', 'Storing audit event in DDB.');
-    return ddb.putUnique(process.env.DDB_TABLE_IMPORT_EVENT, importEvent, "importEventGuid")
+    return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_EVENT'), importEvent, "importEventGuid")
     .then(function() {
         if(tl) tl.logInfo('STR_EVT_SUC', 'Stored audit event in DDB.');
 
         if(storeResultInS3) {
-            return s3.putObjectUnique(process.env.S3_IMPORT_BATCH_RECORD_PROC_SCRPT_RESULT, importEvent.importEventGuid, JSON.stringify(flowResult))
+            return s3.putObjectUnique(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_PROC_SCRPT_RESULT'), importEvent.importEventGuid, JSON.stringify(flowResult))
             .then(function(result) {
                 return Promise.resolve(true);
             })
@@ -314,7 +314,7 @@ function createEvent(importEvent, tl) {
 }
 
 function getEventFlowScriptResult(eventGuid) {
-    return s3.getObjectBody(process.env.S3_IMPORT_BATCH_RECORD_PROC_SCRPT_RESULT, eventGuid)
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_PROC_SCRPT_RESULT'), eventGuid)
     .then(function(body) {
         return Promise.resolve(JSON.parse(body));
     })

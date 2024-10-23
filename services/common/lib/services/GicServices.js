@@ -5,12 +5,12 @@ The code for the actual APIs are exposed in their specific repository, ie. flow-
 */
 var request = require('request-promise');
 var _ = require('lodash');
-
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 function getBaseUrl()
 {
-    if( !process.env.FLOW_GIC_SERVICES_URI )
+    if( !EnvironmentConfig.getProperty('gic-services-v1','FLOW_GIC_SERVICES_URI') )
         throw new Error('Unable to create wrapper for gic-services, uri env vars not defined.');
-    return process.env.FLOW_GIC_SERVICES_URI;
+    return EnvironmentConfig.getProperty('gic-services-v1','FLOW_GIC_SERVICES_URI');
 }
 
 module.exports = {

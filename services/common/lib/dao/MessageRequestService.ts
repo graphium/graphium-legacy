@@ -91,6 +91,7 @@ export async function intakeMessageRequest(input:IntakeMessageRequestInput) {
     
     // First persist the message content itself (ie. generate a valid
     // GUID and send the data to S3.)
+    // @ts-ignore
     let persistedMessageRequest = await MessageRequestDAO.create(inboundMessageRequest);
     
     // Then retrieve the flows for the specified message types

@@ -23,7 +23,6 @@ var FtpSiteDAO = require('@common/lib/dao/FtpSiteDAO.js');
 var ImportBatchTemplateDAO = require('@common/lib/dao/ImportBatchTemplateDAO.js');
 var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var moment = require('moment');
-var InterfaxInbound = require('@common/lib/services/interfax/InterfaxInbound.js');
 var IndexOrganizationDAO = require('@common/lib/dao/index/IndexOrganizationDAO');
 var TransactionLog = require('@common/lib/log/TransactionLog');
 
@@ -37,7 +36,7 @@ router.get(
     auth.ensureAuthenticatedOrg({ permissions: ['IMPORT_BATCH:CREATE'] }),
     function(req, res, next) {
         var fileType = decodeURIComponent(req.query.fileType);
-        var bucket = process.env.S3_TMP_IMPORT_BATCH_DATA;
+        var bucket = EnvironmentConfig.getProperty('collector-v1','S3_TMP_IMPORT_BATCH_DATA');
         var id = uuid.v4();
         var s3 = new AWS.S3({ signatureVersion: 'v4' });
         var s3Params = {
@@ -259,67 +258,6 @@ function(req, res) {
         res.redirect(req.get('Referrer') || '/collector/faxLines/');
     })
 });
-
-// Unauthenticated callback to intake faxes from interfax service.
-// TODO probably need to add some IP address based control or something.
-router.post('/fax/interfax/:importFaxLineGuid', function(req, res, next) {
-    var data = req.body;
-
-    console.log('Attempting to import fax from interfax:');
-    console.log(data);
-    var fax;
-    new InterfaxInbound().getRecord(data.TransactionID)
-    .then(function(record) {
-        // First let's create a timestamp.
-        console.log('Retrieved record data from interfax:');
-        console.log(record);
-        var receiveTime
-        try {
-            var m = moment.utc(record.receiveTime, 'YYYY-MM-DDTHH:mm:ss');
-            console.log('Parsed receive time from ' + record.receiveTime + ' => ' + m.toString() + ' ('+m.valueOf()+')');
-            receiveTime = m.valueOf();
-        }
-        catch(error) {
-            console.log('Error calculating receive time: ' + error.message);
-            receiveTime = Date.now();
-        }
-
-        fax = {
-            faxService: 'interfax',
-            interfaxData: {
-                transactionId: record.messageId.toString(),
-                phoneNumber: record.phoneNumber,
-                messageType: parseInt(record.messageType),
-                messageSize: parseInt(record.messageSize),
-                remoteCsid: record.remoteCSID || null,
-                pages: parseInt(record.pages),
-                status: parseInt(record.messageStatus),
-                recordingDuration: parseInt(record.recordingDuration),
-                receiveTime: record.receiveTime,
-                callerId: record.callerId
-            },
-            interfaxTransactionId: record.messageId.toString(),
-            pageCount: parseInt(record.pages),
-            receivedAt: receiveTime,
-            createdAt: Date.now(),
-            callerId: record.callerId
-        }
-        return new InterfaxInbound().getImage(data.TransactionID);
-    })
-    .then(function(faxPdf) {
-        return ImportFaxLineDAO.createFaxForLine(req.params.importFaxLineGuid, fax, faxPdf);
-    })
-    .then(function() {
-        console.log('Completed receiving interfax fax.');
-        res.status(200).send();
-    })
-    .catch(function(error) {
-        console.log(error.message);
-        console.log(error.stack);
-        res.status(500).send('Unable to intake fax: ' + error.message);
-    })
-});
-
 
 router.get('/externalWebForms', 
            auth.ensureAuthenticatedOrg({permissions:{some:['IMPORT_BATCH:READ_ASSIGNED','IMPORT_BATCH:READ_ALL']}}), 
@@ -615,7 +553,7 @@ router.post(
         var fileId = req.body.fileId;
         var fileType = req.body.fileType;
 
-        s3.getObjectBody(process.env.S3_TMP_IMPORT_BATCH_DATA, fileId)
+        s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_TMP_IMPORT_BATCH_DATA'), fileId)
             .then(function(data) {
                 batchData = _.startsWith(fileType,'text/') ? data.toString() : data;
 
@@ -667,7 +605,7 @@ router.post(
                 });
             })
             .then(function() {
-                return s3.deleteObject(process.env.S3_TMP_IMPORT_BATCH_DATA, fileId);
+                return s3.deleteObject(EnvironmentConfig.getProperty('collector-v1','S3_TMP_IMPORT_BATCH_DATA'), fileId);
             })
             .then(function() {
                 res.status(200).send({batchUrl: '/collector/batch/'+createdBatch.importBatchGuid, batchId: createdBatch.importBatchGuid});

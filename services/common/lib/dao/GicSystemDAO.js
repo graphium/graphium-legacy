@@ -17,13 +17,13 @@ var createDynamoDbDocClient = function() {
 }
 
 var getAllGicSystems = function() {
-    return ddbUtil.scanAll(process.env.DDB_TABLE_GIC_SYSTEMS);
+    return ddbUtil.scanAll(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_SYSTEMS'));
 }
 
 var createGicSystem = function(system) {
     return new Promise(function(resolve,reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_GIC_SYSTEMS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_SYSTEMS'),
             Item: system,
             ConditionExpression: "attribute_not_exists(systemId)"
         };
@@ -39,7 +39,7 @@ var createGicSystem = function(system) {
 var updateGicSystem = function(system) {
     return new Promise(function(resolve,reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_GIC_SYSTEMS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_SYSTEMS'),
             Item: system,
             ConditionExpression: "attribute_exists(systemId)"
         };
@@ -55,7 +55,7 @@ var updateGicSystem = function(system) {
 var getGicSystem = function(systemId) {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_GIC_SYSTEMS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_SYSTEMS'),
             Key: {
                 systemId: systemId   
             },
@@ -81,7 +81,7 @@ var getGicSystem = function(systemId) {
 var getGicSystemByInternalName = function(systemInternalName) {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_GIC_SYSTEMS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_SYSTEMS'),
             FilterExpression : 'systemInternalName = :systemInternalName',
             ExpressionAttributeValues : {':systemInternalName' : systemInternalName}
         };

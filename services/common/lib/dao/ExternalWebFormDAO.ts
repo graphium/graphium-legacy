@@ -1,6 +1,7 @@
 
 import FacilitySetting from '../model/flow/FacilitySetting';
 import ExternalWebForm from '../model/flow/ExternalWebForm';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 var AWS = require('aws-sdk');
 var uuid = require('uuid');
@@ -36,8 +37,8 @@ export async function getExternalWebFormRecords(externalWebFormGuid:string):Prom
     let searchKeyPrefix = externalWebFormDefinition.orgInternalName + '_' + externalWebFormDefinition.facilityId + '_' + externalWebFormDefinition.externalWebFormGuid + '_';
 
     let data = await ddb.queryAll<ImportBatchRecord>(
-        process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
-        process.env.DDB_TABLE_IMPORT_BATCH_ORG_SEARCHKEY_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_ORG_SEARCHKEY_IDX'),
         "orgInternalName = :orgInternalName and begins_with (searchKey, :searchKeyPrefix)",
         <ExpressionAttributeValueMap>{ 
             ":orgInternalName": externalWebFormDefinition.orgInternalName,
@@ -54,7 +55,7 @@ export async function getForm(externalWebFormGuid:string):Promise<ExternalWebFor
     }
 
     var params = {
-        TableName: process.env.DDB_TABLE_EXTERNAL_WEB_FORM,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_EXTERNAL_WEB_FORM'),
         KeyConditionExpression: "externalWebFormGuid = :externalWebFormGuid",
         ExpressionAttributeValues: {
             ":externalWebFormGuid": externalWebFormGuid
@@ -75,8 +76,8 @@ export async function getFormDefinitionsForOrg(orgInternalName:string):Promise<E
 
     console.log('Getting external web forms for: ' + orgInternalName);
     let data = await ddb.queryAll<ExternalWebForm>(
-        process.env.DDB_TABLE_EXTERNAL_WEB_FORM,
-        process.env.DDB_TABLE_EXTERNAL_WEB_FORM_ORG_NAME_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_EXTERNAL_WEB_FORM'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_EXTERNAL_WEB_FORM_ORG_NAME_IDX'),
         "orgInternalName = :orgInternalName",
         <ExpressionAttributeValueMap>{
             ":orgInternalName": orgInternalName

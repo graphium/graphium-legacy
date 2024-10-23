@@ -17,7 +17,7 @@ import xmlParser = require('express-xml-bodyparser');
 import session = require('express-session');
 var passport = require('passport');
 import ConnectRedis = require('connect-redis');
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 let RedisStore = ConnectRedis(session);
 import enforce = require('express-sslify');
 //var FileStore = require('session-file-store')(session);
@@ -30,7 +30,7 @@ let app:any;
 
 async function main() {
     console.log('loading environment config ...');
-    await EnvironmentConfig.loadConfig(['general','auth0','org-db','index-db','cache'],process.env.GRAPHIUM_ENV); //process.env.FLOW_ENV);
+    await EnvironmentConfig.loadConfig(['general','auth0','org-db','index-db','cache','collector-v1','flow-script-v1'],process.env.GRAPHIUM_ENV);
     console.log('config loaded.');
 
     // This will configure Passport to use Auth0
@@ -50,7 +50,7 @@ async function main() {
     winston.add(winston.transports.Loggly, {
         token: EnvironmentConfig.getProperty('general','LOGGLY_TOKEN'),
         subdomain: "graphium",
-        tags: ["app.dashboard","env."+process.env.FLOW_ENV],
+        tags: ["app.dashboard","env."+EnvironmentConfig.environment],
         json:true
     });
 

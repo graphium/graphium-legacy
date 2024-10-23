@@ -15,6 +15,8 @@ var ImportBatchTemplateDAO = require('./ImportBatchTemplateDAO');
 var HagyParser = require('../util/HagyParser').default;
 var HcaAdvantxParser = require('../util/HcaAdvantxParser').default;
 var MedaxionBillingParser = require('../util/MedaxionBillingParser').default;
+var EnvironmentConfig = require('../config/EnvironmentConfig').EnvironmentConfig;
+
 /*
 DDB_TABLE_IMPORT_BATCH
 DDB_TABLE_IMPORT_BATCH_CHECKED_OUT_BY_IDX
@@ -32,16 +34,16 @@ S3_IMPORT_BATCH_RECORD_DATA_ENTRY
 
 
 var saveImportBatchToS3 = function(importBatchGuid, importBatchData) {
-    return s3.putObjectUnique(process.env.S3_IMPORT_BATCH_DATA, importBatchGuid, importBatchData);
+    return s3.putObjectUnique(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_DATA'), importBatchGuid, importBatchData);
 }
 
 var saveImportBatchRecordToS3 = function(importBatchRecordGuid, importBatchRecordData) {
-    return s3.putObjectUnique(process.env.S3_IMPORT_BATCH_RECORD_DATA, importBatchRecordGuid, importBatchRecordData);
+    return s3.putObjectUnique(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA'), importBatchRecordGuid, importBatchRecordData);
 }
 
 var saveImportBatchRecordDataEntryToS3 = function(importBatchGuid, recordIndex, dataEntryData) {
     var key = importBatchGuid + ':' + recordIndex;
-    return s3.putObject(process.env.S3_IMPORT_BATCH_RECORD_DATA_ENTRY, key, dataEntryData);
+    return s3.putObject(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA_ENTRY'), key, dataEntryData);
 }
 
 var createImportBatchDdb = function(importBatch) {
@@ -49,7 +51,7 @@ var createImportBatchDdb = function(importBatch) {
     var cleanedDdbInstance = _.clone(importBatch);
     delete cleanedDdbInstance.batchData;
 
-    return ddb.putUnique(process.env.DDB_TABLE_IMPORT_BATCH, cleanedDdbInstance, "importBatchGuid");
+    return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'), cleanedDdbInstance, "importBatchGuid");
 }
 
 var createImportBatchRecordDdb = function(importBatchRecord) {
@@ -57,24 +59,24 @@ var createImportBatchRecordDdb = function(importBatchRecord) {
     var cleanedDdbInstance = _.clone(importBatchRecord);
     delete cleanedDdbInstance.recordData;
 
-    return ddb.putUnique(process.env.DDB_TABLE_IMPORT_BATCH_RECORD, cleanedDdbInstance, "importBatchRecordGuid");
+    return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'), cleanedDdbInstance, "importBatchRecordGuid");
 }
 
 var getImportBatchDdb = function(importBatchGuid) {
-    return ddb.getConsistent(process.env.DDB_TABLE_IMPORT_BATCH, "importBatchGuid", importBatchGuid);
+    return ddb.getConsistent(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'), "importBatchGuid", importBatchGuid);
 }
 
 var retrieveImportBatchDataFromS3 = function(importBatchGuid) {
-    return s3.getObjectBody(process.env.S3_IMPORT_BATCH_DATA, importBatchGuid);
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_DATA'), importBatchGuid);
 }
 
 var retrieveImportBatchRecordDataFromS3 = function(importBatchRecordGuid) {
-    return s3.getObjectBody(process.env.S3_IMPORT_BATCH_RECORD_DATA, importBatchRecordGuid);
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA'), importBatchRecordGuid);
 }
 
 var retrieveImportBatchRecordDataEntryDataFromS3 = function(importBatchGuid, recordIndex) {
     var key = importBatchGuid + ':' + recordIndex;
-    return s3.getObjectBody(process.env.S3_IMPORT_BATCH_RECORD_DATA_ENTRY, key)
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA_ENTRY'), key)
     .then(function(importBatchRecordDataEntryData) {
         return Promise.resolve(JSON.parse(importBatchRecordDataEntryData));
     })
@@ -160,7 +162,7 @@ function generateImportBatchRecord(batch, recordDataType, recordData, recordOrde
     if (validationResult.error) {
         var error = new Error('Unable to create ImportBatchRecord object, invalid parameters.');
         console.log(validationResult);
-        error.validationError = validationResult.error;
+        error['validationError'] = validationResult.error;
         throw error;
     }
 
@@ -532,7 +534,7 @@ function setBatchTemplate(importBatchGuid, template) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -844,7 +846,7 @@ function _setBatchPageCount(importBatchGuid, pageCount) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -943,7 +945,7 @@ function getBatchByGuid(importBatchGuid, withData, withRecords, withRecordData) 
 function getIncompleteBatches(orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             FilterExpression: "batchStatus in (:pendingGeneration,:generating,:generationError,:triage,:processing,:pendingReview) and orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":triage": "triage",
@@ -987,7 +989,7 @@ function getAllDataEntryBatchesForOrgs(org, after) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             FilterExpression: "batchDataType = :batchDataType and batchStatus in (:processing,:pendingReview,:complete) and orgInternalName = :orgInternalName and createdAt >= :after",
             ExpressionAttributeValues: {
                 ":batchDataType": "pdf",
@@ -1029,7 +1031,7 @@ function getAllDataEntryBatchesForOrgs(org, after) {
 function getAllProcessableBatches(orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             FilterExpression: "batchStatus in (:processing,:pendingReview,:complete) and orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":processing": "processing",
@@ -1071,7 +1073,7 @@ function getAllProcessableBatches(orgInternalName) {
 function getAllCompleteBatches(orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             FilterExpression: "batchStatus = :complete and orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":complete": "complete",
@@ -1109,7 +1111,7 @@ function getAllCompleteBatches(orgInternalName) {
 function getCompleteBatches(orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             FilterExpression: "batchStatus = :complete and orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":complete": "complete",
@@ -1131,7 +1133,7 @@ function getCompleteBatches(orgInternalName) {
 function getBatchRecords(importBatchGuid, withData) {
     return new Promise(function(resolve, reject) {
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
                 KeyConditionExpression: "importBatchGuid = :importBatchGuid and recordIndex >= :zero",
                 ExpressionAttributeValues: {
                     ":importBatchGuid": importBatchGuid,
@@ -1197,7 +1199,7 @@ function getBatchRecord(importBatchGuid, recordIndex, withRecordData, withDataEn
     return new Promise(function(resolve, reject) {
             //console.log('Retrieving batch record from ddb: ' + importBatchGuid + ':' + recordIndex);
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
                 KeyConditionExpression: "importBatchGuid = :importBatchGuid and recordIndex = :recordIndex",
                 ExpressionAttributeValues: {
                     ":importBatchGuid": importBatchGuid,
@@ -1267,7 +1269,7 @@ function getBatchRecordStatuses(importBatchGuid) {
     //console.log('Getting batch record statuses...');
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             KeyConditionExpression: "importBatchGuid = :importBatchGuid and recordIndex >= :zero",
             ExpressionAttributeValues: {
                 ":importBatchGuid": importBatchGuid,
@@ -1318,7 +1320,7 @@ function _setBatchStatusCounts(importBatchGuid, records, statusCounts, batchComp
         }
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1413,7 +1415,7 @@ function grabBatch(orgInternalName, username) {
 
 function getUnassignedBatches(orgInternalName) {
     return ddb.scanAll(
-        process.env.DDB_TABLE_IMPORT_BATCH,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
         "batchStatus in (:triage, :processing) and attribute_exists(facilityId) and not attribute_exists(assignedTo) and orgInternalName = :orgInternalName",
         {
             ":triage": "triage",
@@ -1428,7 +1430,7 @@ function getUnassignedBatches(orgInternalName) {
 
 function getAllBatchesPendingGeneration() {
     return ddb.scanAll(
-        process.env.DDB_TABLE_IMPORT_BATCH,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
         "batchStatus in (:pending_generation)",
         {
             ":pending_generation": "pending_generation"
@@ -1444,7 +1446,7 @@ function assignBatch(importBatchGuid, username, onlyIfUserNotAssigned) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1475,8 +1477,8 @@ function assignBatch(importBatchGuid, username, onlyIfUserNotAssigned) {
 function getAssignedBatchesByUser(username, orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
-            IndexName: process.env.DDB_TABLE_IMPORT_BATCH_ASSIGNED_TO_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_ASSIGNED_TO_IDX'),
             KeyConditionExpression: "assignedTo = :username and orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":username": username,
@@ -1511,7 +1513,7 @@ function indicateBatchGenerating(importBatchGuid) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1537,7 +1539,7 @@ function indicateBatchGenerating(importBatchGuid) {
 function _indicateBatchGenerationComplete(importBatchGuid) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1590,7 +1592,7 @@ function indicateBatchGenerationError(importBatchGuid, errorMessage) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1616,7 +1618,7 @@ function discardBatch(importBatchGuid, discardReason) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },
@@ -1677,7 +1679,7 @@ function saveRecordDataEntryData(importBatchGuid, recordIndex, dataEntryData, da
 function touchRecord(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -1711,7 +1713,7 @@ var addBatchToProcessingStream = function(importBatchGuid) {
                 Data: JSON.stringify({importBatchGuid:importBatchGuid}),
                 PartitionKey: importBatchGuid
             }],
-            StreamName: process.env.KS_BATCH_PROCESSOR
+            StreamName: EnvironmentConfig.getProperty('collector-v1','KS_BATCH_PROCESSOR')
         };
 
         var kinesis = new AWS.Kinesis({region:"us-east-1"});
@@ -1737,7 +1739,7 @@ var addBatchesToRecordReprocessorStream = function(importBatchGuids, userName, o
 
         var params = {
             Records: [],
-            StreamName: process.env.KS_BATCH_RECORD_REPROCESSOR
+            StreamName: EnvironmentConfig.getProperty('collector-v1','KS_BATCH_RECORD_REPROCESSOR')
         };
 
         for(var i = 0; i < importBatchGuids.length; i++) {
@@ -1783,7 +1785,7 @@ var addRecordToProcessingStream = function(importBatchGuid, recordIndex) {
                 Data: JSON.stringify({importBatchGuid:importBatchGuid, recordIndex:recordIndex}),
                 PartitionKey: importBatchGuid + '::' + uuid.v4()
             }],
-            StreamName: process.env.KS_RECORD_PROCESSOR
+            StreamName: EnvironmentConfig.getProperty('collector-v1','KS_RECORD_PROCESSOR')
         };
 
         var kinesis = new AWS.Kinesis({region:"us-east-1"});
@@ -1804,7 +1806,7 @@ var _addRecordsChunkToProcessingStream = function(importBatchRecords) {
 
         var params = {
             Records: [],
-            StreamName: process.env.KS_RECORD_PROCESSOR
+            StreamName: EnvironmentConfig.getProperty('collector-v1','KS_RECORD_PROCESSOR')
         };
 
         for(var i = 0; i < importBatchRecords.length; i++) {
@@ -1855,7 +1857,7 @@ function indicateRecordDataEntry(importBatchGuid, recordIndex, dataEntryInvalidF
         return new Promise(function(resolve, reject) {
 
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
                 Key: {
                     importBatchGuid: importBatchGuid,
                     recordIndex: recordIndex
@@ -1961,7 +1963,7 @@ function submitRecordForProcessing(importBatchRecord, skipUpdateCounts) {
 function indicateRecordPendingReprocessing(importBatchGuid, recordIndex, skipUpdateCounts) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2010,7 +2012,7 @@ function indicateRecordPendingReprocessing(importBatchGuid, recordIndex, skipUpd
 function indicateRecordPendingProcessing(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2042,7 +2044,7 @@ function indicateRecordPendingProcessing(importBatchGuid, recordIndex) {
 function indicateRecordProcessing(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2073,7 +2075,7 @@ function indicateRecordProcessing(importBatchGuid, recordIndex) {
 function updateRecordImageRotation(importBatchGuid, recordIndex, degrees) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2098,7 +2100,7 @@ function updateRecordImageRotation(importBatchGuid, recordIndex, degrees) {
 function indicateRecordProcessingFailed(importBatchGuid, recordIndex, reason, processingData, updateCounts) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2136,7 +2138,7 @@ function indicateRecordProcessingFailed(importBatchGuid, recordIndex, reason, pr
 function indicateRecordProcessingComplete(importBatchGuid, recordIndex, processingData, updateCounts) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2174,7 +2176,7 @@ function indicateRecordPendingReview(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         // Note that we only allow records that are in pending_data_entry to be sent back for review
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2208,7 +2210,7 @@ function undiscardRecord(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2243,7 +2245,7 @@ function discardRecord(importBatchGuid, recordIndex, reason) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2279,7 +2281,7 @@ function unignoreRecord(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2314,7 +2316,7 @@ function ignoreRecord(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2357,7 +2359,7 @@ function addNoteToRecord(importBatchGuid, recordIndex, username, noteText) {
         };
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: recordIndex
@@ -2382,7 +2384,7 @@ function addNoteToRecord(importBatchGuid, recordIndex, username, noteText) {
 function getRecordNotes(importBatchGuid, recordIndex) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             KeyConditionExpression: "importBatchGuid = :importBatchGuid and recordIndex = :recordIndex",
             ExpressionAttributeValues: {
                 ":importBatchGuid": importBatchGuid,
@@ -2416,7 +2418,7 @@ function openBatchForProcessing(importBatchGuid, assignTo, onlyIfUserNotAssigned
             // Right now for consistency purposes we are allowing batches that are in 'generating' status to be
             // opened for processing.
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
                 Key: {
                     importBatchGuid: importBatchGuid
                 },
@@ -2470,7 +2472,7 @@ function setBatchFacility(importBatchGuid, facilityId) {
         }
 
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
             Key: {
                 importBatchGuid: importBatchGuid
             },

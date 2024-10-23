@@ -12,9 +12,9 @@ var MessageRequestDAO = require('../dao/MessageRequestDAO');
 
 function getBaseUrl()
 {
-    if( !process.env.FLOW_CORE_SERVICES_PRIVATE_URI )
+    if( !EnvironmentConfig.getProperty('gic-services-v1','FLOW_CORE_SERVICES_PRIVATE_URI'))
         throw new Error('Unable to create wrapper for flow-core-services-private, uri env vars not defined.');
-    return process.env.FLOW_CORE_SERVICES_PRIVATE_URI;
+    return EnvironmentConfig.getProperty('gic-services-v1','FLOW_CORE_SERVICES_PRIVATE_URI');
 }
 
 function processMessageInstance(messageInstance, returnResult) {
@@ -79,7 +79,7 @@ module.exports = {
     
      sendOutboundGicRequest: function(orgInternalName, systemName, outboundMessageRequest, returnResult) {
         
-        var sig = signature.generate(outboundMessageRequest,process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate(outboundMessageRequest,EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'POST',
@@ -102,7 +102,7 @@ module.exports = {
         return processMessageInstance(messageInstance, returnResult);
 
         /*
-        var sig = signature.generate(messageInstance,process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate(messageInstance,EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'POST',
@@ -126,7 +126,7 @@ module.exports = {
 
     ///collector/batch/:importBatchGuid/:recordIndex/process/:flowGuid
     processImportBatchRecord: function(importBatchGuid, recordIndex, flowGuid) {
-        var sig = signature.generate({importBatchGuid:importBatchGuid,recordIndex:recordIndex},process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate({importBatchGuid:importBatchGuid,recordIndex:recordIndex},EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'POST',
@@ -141,7 +141,7 @@ module.exports = {
     },
     // collector/batch/:importBatchGuid/records/generate
     generateBatchRecords: function(importBatchGuid) {
-        var sig = signature.generate({importBatchGuid:importBatchGuid},process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate({importBatchGuid:importBatchGuid},EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'POST',
@@ -162,7 +162,7 @@ module.exports = {
             indexUserId: indexUserId
         }
 
-        var sig = signature.generate({importBatchGuid:importBatchGuid, user:user},process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate({importBatchGuid:importBatchGuid, user:user},EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'POST',
@@ -190,7 +190,7 @@ module.exports = {
 
     intakeMessageRequest: function(orgInternalName, facilityId, inboundMessageRequest, returnRequest) {
         
-        var sig = signature.generate({hash:inboundMessageRequest.syncStreamHashKey},process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate({hash:inboundMessageRequest.syncStreamHashKey},EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         returnRequest = _.isBoolean(returnRequest) ? returnRequest : false;
         var options = {
             method: 'POST',
@@ -207,7 +207,7 @@ module.exports = {
 
     createFtpConnectionFile: function(ftpSiteGuid, fileConnectionInfo) {
         
-        var sig = signature.generate(fileConnectionInfo,process.env.CORE_SVC_API_KEY);
+        var sig = signature.generate(fileConnectionInfo,EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         var options = {
             method: 'POST',
             uri: getBaseUrl() + '/collector/ftp/connection/' + ftpSiteGuid + '/file',

@@ -17,7 +17,6 @@ var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var ImportBatchTemplateDAO = require('@common/lib/dao/ImportBatchTemplateDAO.js')
 var Promise = require('bluebird');
 var moment = require('moment');
-var InterfaxInbound = require('@common/lib/services/interfax/InterfaxInbound.js');
 var InboundMessageInstanceDAO = require('@common/lib/dao/InboundMessageInstanceDAO.js');
 var fileType = require('file-type');
 var AWS = require('aws-sdk');
@@ -249,7 +248,7 @@ function(req, res) {
             ftpSiteGuid: existingFtpSite.ftpSiteGuid,
             lastScannedAt: existingFtpSite.lastScannedAt
         }];
-        return addMessagesToKinesisStream(process.env.KS_FTP_SCAN, scanMessages, 'ftpSiteGuid');
+        return addMessagesToKinesisStream(EnvironmentConfig.getProperty('collector-v1','KS_FTP_SCAN'), scanMessages, 'ftpSiteGuid');
     })
     .then(function() {
         res.send(200);

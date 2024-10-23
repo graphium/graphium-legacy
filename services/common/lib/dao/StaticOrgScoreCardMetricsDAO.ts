@@ -10,6 +10,7 @@ import StaticOrgScoreCardMetricSample from '../model/flow/StaticOrgScoreCardMetr
 import StaticOrgScoreCardMetricDefinition from '../model/flow/StaticOrgScoreCardMetricDefinition';
 import * as OrgSettingDAO from './OrgSettingDAO';
 import * as DateUtil from '../util/DateUtil';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 var createDynamoDbDocClient = function():AWS.DynamoDB.DocumentClient {
     var ddbService = new AWS.DynamoDB({
@@ -103,8 +104,8 @@ export async function getMetricDefinitions(orgInternalName:string):Promise<Stati
 export async function getStaticMetricsForOrg(orgInternalName:string, startDate:number, endDate:number):Promise<StaticOrgScoreCardMetricSample[]> {
     let ddbClient = createDynamoDbDocClient();
     var params = <AWS.DynamoDB.ScanInput> {
-        TableName : process.env.DDB_TABLE_ORG_SCORECARD_METRICS,
-        IndexName: process.env.DDB_TABLE_ORG_SCORECARD_METRICS_ORG_IDX,
+        TableName : EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_ORG_SCORECARD_METRICS'),
+        IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_ORG_SCORECARD_METRICS_ORG_IDX'),
         FilterExpression : 'metricTimestamp BETWEEN :startDate AND :endDate AND orgInternalName = :orgInternalName',
         ExpressionAttributeValues : {
             ':startDate' : startDate,
@@ -155,7 +156,7 @@ export async function setMetrics(orgInternalName:string, facilityId:number, year
         };
 
         var params = <AWS.DynamoDB.UpdateItemInput>{  
-            TableName: process.env.DDB_TABLE_ORG_SCORECARD_METRICS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_ORG_SCORECARD_METRICS'),
             Key: {
                 metricKey: metric.metricKey.toString()
             },

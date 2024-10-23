@@ -1,6 +1,7 @@
 // This class helps us deal with the v1 authentication signature for legacy services
 //declare function escape(s: string): string;
 import * as crypto from 'crypto';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 export class RequestSignatureUtil {
 
@@ -25,7 +26,7 @@ export class RequestSignatureUtil {
         // We do this because the base path mapping in API gateway (which we use for all evnironments other
         // than local) does not expose the base path mapping through the lambda context object. So we have to 
         // append this so that the client (mobile) sends the same path we are generating here.
-        if(process.env.GRAPHIUM_ENV != "local") {
+        if(EnvironmentConfig.environment != "local") {
             path = "/api" + path;
         }
 

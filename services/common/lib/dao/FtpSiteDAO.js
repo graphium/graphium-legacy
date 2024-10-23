@@ -1,3 +1,5 @@
+import { EnvironmentConfig } from '../config/EnvironmentConfig.js';
+
 var Promise = require('bluebird');
 var uuid = require('uuid');
 var winston = require('winston');
@@ -223,12 +225,12 @@ function createFileForFtpSite(ftpSiteGuid, ftpFile, ftpFileDataBuffer, tl) {
     validateFtpFile(ftpFile);
 
     if(tl) tl.logInfo('PERS_DDB','Creating FTP file in DDB.');
-    return ddb.putUnique(process.env.DDB_TABLE_FTP_FILE, ftpFile, "ftpFileGuid");
+    return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'), ftpFile, "ftpFileGuid");
   })
   .then(function () {
     if(ftpFile.fileStatus == 'downloaded') {
       if(tl) tl.logInfo('PERS_S3','Persisting file data to S3.');
-      return s3.putObjectUnique(process.env.S3_FTP_FILE_DATA, ftpFile.ftpFileGuid, ftpFileDataBuffer);
+      return s3.putObjectUnique(EnvironmentConfig.getProperty('collector-v1','S3_FTP_FILE_DATA'), ftpFile.ftpFileGuid, ftpFileDataBuffer);
     }
     else {
       return Promise.resolve();
@@ -279,7 +281,7 @@ function createFileForFtpSite(ftpSiteGuid, ftpFile, ftpFileDataBuffer, tl) {
 }
 
 function getFileData(ftpFileGuid) {
-  return s3.getObjectBody(process.env.S3_FTP_FILE_DATA, ftpFileGuid)
+  return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_FTP_FILE_DATA'), ftpFileGuid)
     .catch(function (error) {
       if (error.code == 'NoSuchKey') {
         return Promise.reject(new Error('Unable to find data for this file.'));
@@ -294,7 +296,7 @@ function getFtpFile(ftpFileGuid, withFtpSite) {
   var ftpFile;
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_FILE,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'),
       KeyConditionExpression: "ftpFileGuid = :ftpFileGuid",
       ExpressionAttributeValues: {
         ":ftpFileGuid": ftpFileGuid
@@ -324,8 +326,8 @@ function getFtpFile(ftpFileGuid, withFtpSite) {
 
 function getFilesForSite(ftpSiteGuid) {
   return ddb.queryAll(
-    process.env.DDB_TABLE_FTP_FILE,
-    process.env.DDB_TABLE_FTP_FILE_SITE_IDX,
+    EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'),
+    EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE_SITE_IDX'),
     "ftpSiteGuid = :ftpSiteGuid and createdAt > :zero",
     {
         ":ftpSiteGuid": ftpSiteGuid,
@@ -341,8 +343,8 @@ function getFilesForSite(ftpSiteGuid) {
 function getFilesByChecksum(ftpSiteGuid, checksum) {
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_FILE,
-      IndexName: process.env.DDB_TABLE_FTP_CHECKSUM_IDX,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'),
+      IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_CHECKSUM_IDX'),
       KeyConditionExpression: "checksum = :checksum",
       FilterExpression: "ftpSiteGuid = :ftpSiteGuid",
       ExpressionAttributeValues: {
@@ -362,8 +364,8 @@ function getFilesByChecksum(ftpSiteGuid, checksum) {
 function getFilesByName(ftpSiteGuid, fileName) {
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_FILE,
-      IndexName: process.env.DDB_TABLE_FTP_FILE_NAME_IDX,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'),
+      IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE_NAME_IDX'),
       KeyConditionExpression: "fileName = :fileName",
       FilterExpression: "ftpSiteGuid = :ftpSiteGuid",
       ExpressionAttributeValues: {
@@ -384,7 +386,7 @@ function getFtpSite(ftpSiteGuid) {
   var ftpSite;
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_SITE,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
       KeyConditionExpression: "ftpSiteGuid = :ftpSiteGuid",
       ExpressionAttributeValues: {
         ":ftpSiteGuid": ftpSiteGuid
@@ -420,8 +422,8 @@ function getFtpSite(ftpSiteGuid) {
 function getFtpSitesForOrg(orgInternalName) {
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_SITE,
-      IndexName: process.env.DDB_TABLE_FTP_SITE_ORG_IDX,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
+      IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE_ORG_IDX'),
       KeyConditionExpression: "orgInternalName = :orgInternalName",
       ExpressionAttributeValues: {
         ":orgInternalName": orgInternalName
@@ -453,7 +455,7 @@ function getFtpSitesForOrg(orgInternalName) {
 }
 
 function getAllFtpSites(orgInternalName) {
-  return ddb.scanAll(process.env.DDB_TABLE_FTP_SITE);
+  return ddb.scanAll(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'));
 }
 
 function createFtpSite(ftpSite) {
@@ -478,7 +480,7 @@ function createFtpSite(ftpSite) {
       return Promise.reject(new Error('Unable to update FTP connection, batch template does not belong to this organization.'));
     }
     else {
-      return ddb.putUnique(process.env.DDB_TABLE_FTP_SITE, ftpSite, "ftpSiteGuid")
+      return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'), ftpSite, "ftpSiteGuid")
     }
   })
   .then(function () {
@@ -499,7 +501,7 @@ function encryptFtpSiteConfig(ftpSiteConfig) {
     }
 
     var params = {
-      KeyId: 'alias/collector/' + process.env.FLOW_ENV + '/ftpSiteConfig',
+      KeyId: 'alias/collector/' + EnvironmentConfig.environment + '/ftpSiteConfig',
       Plaintext: JSON.stringify(ftpSiteConfig)
     };
 
@@ -565,7 +567,7 @@ function updateFtpSite(ftpSiteGuid, ftpSite) {
   .then(function (ftpSiteConfigCipher) {
     return new Promise(function (resolve, reject) {
       var params = {
-        TableName: process.env.DDB_TABLE_FTP_SITE,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
         Key: {
           ftpSiteGuid: ftpSiteGuid
         },
@@ -608,7 +610,7 @@ function updateFtpSite(ftpSiteGuid, ftpSite) {
 function indicateFtpSiteScanned(ftpSiteGuid) {
   return new Promise(function (resolve, reject) {
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_SITE,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
       Key: {
         ftpSiteGuid: ftpSiteGuid
       },
@@ -640,7 +642,7 @@ function setCreatedBatchForFile(ftpFileGuid, importBatchGuid) {
 
     var docClient = ddb.createDocClient();
     var params = {
-      TableName: process.env.DDB_TABLE_FTP_FILE,
+      TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_FILE'),
       Key: {
         ftpFileGuid: ftpFileGuid
       },
@@ -664,7 +666,7 @@ function updateFtpSiteConfig(ftpSiteGuid, ftpSiteConfig) {
     .then(function (ftpSiteConfigCipher) {
       return new Promise(function (resolve, reject) {
         var params = {
-          TableName: process.env.DDB_TABLE_FTP_SITE,
+          TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
           Key: {
             ftpSiteGuid: ftpSiteGuid
           },
@@ -687,7 +689,7 @@ function updateFtpSiteConfig(ftpSiteGuid, ftpSiteConfig) {
 function getAllUnscannedConnections(since) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_FTP_SITE,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FTP_SITE'),
             FilterExpression: "(attribute_not_exists(lastScannedAt) or attribute_type(lastScannedAt, :nullType) or lastUpdatedAt < :since) and activeIndicator = :active",
             ExpressionAttributeValues: {
                 ":since": since,

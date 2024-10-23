@@ -1,3 +1,5 @@
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
+
 var Promise = require('bluebird');
 var uuid = require('uuid');
 var AWS = require('aws-sdk');
@@ -15,6 +17,7 @@ var createDynamoDbDocClient = function() {
         service: ddbService
     });
 }
+
 var saveContentToS3 = function(messageRequestGuid, messageContent) {
     return new Promise(function(resolve,reject) {
         
@@ -44,7 +47,7 @@ var saveContentToS3 = function(messageRequestGuid, messageContent) {
         // orphaned S3 object which is a fair tradeoff. There will not be an orphaned DDB object.
 
         //s3.headObject({
-        //    Bucket: process.env.S3_MESSAGE_INSTANCE_BUCKET,
+        //    Bucket: EnvironmentConfig.getProperty('collector-v1','S3_MESSAGE_INSTANCE_BUCKET'),
         //    Key: messageRequestGuid
         //},
         //function(headObjectErr, headObjectData) {
@@ -52,11 +55,11 @@ var saveContentToS3 = function(messageRequestGuid, messageContent) {
         //    if( headObjectErr && headObjectErr.code == "NotFound" ) {
 
                 s3.putObject({
-                    Bucket: process.env.S3_MESSAGE_INSTANCE_BUCKET,
+                    Bucket: EnvironmentConfig.getProperty('collector-v1','S3_MESSAGE_INSTANCE_BUCKET'),
                     Key: messageRequestGuid,
                     ACL: "bucket-owner-full-control",
                     Body: gzippedContent,
-                    SSEKMSKeyId: process.env.S3_SSE_KEY_ID,
+                    SSEKMSKeyId: EnvironmentConfig.getProperty('collector-v1','S3_SSE_KEY_ID'),
                     ServerSideEncryption: "aws:kms",
                     StorageClass: "STANDARD"
                 }, 
@@ -87,7 +90,7 @@ var encryptPatientReference = function(patientReference) {
         }
         
         var params = {
-            KeyId: 'alias/flow/'+process.env.FLOW_ENV+'/accountReference', // we still use the accountReference key as that is the original name.
+            KeyId: 'alias/flow/'+EnvironmentConfig.environment+'/accountReference', // we still use the accountReference key as that is the original name.
             Plaintext: patientReference.toString()
         };
         
@@ -126,7 +129,7 @@ var decryptPatientReference = function(patientReferenceCipher) {
 var persistMessageRequest = function(messageRequest) {
     return new Promise(function(resolve,reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_INBOUND_MESSAGE_REQUESTS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_INBOUND_MESSAGE_REQUESTS'),
             Item: messageRequest,
             ConditionExpression: "attribute_not_exists(messageRequestGuid)"
         };
@@ -142,7 +145,7 @@ var persistMessageRequest = function(messageRequest) {
 var retrieveDdbMessage = function(messageRequestGuid) {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_INBOUND_MESSAGE_REQUESTS,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_INBOUND_MESSAGE_REQUESTS'),
             Key: {
                 messageRequestGuid: messageRequestGuid   
             },
@@ -182,7 +185,7 @@ var retrieveMessageContentFromS3 = function(messageRequest) {
     return new Promise(function(resolve, reject) {        
         var s3 = new AWS.S3( {signatureVersion:"v4"} );
         s3.getObject({
-            Bucket: process.env.S3_MESSAGE_INSTANCE_BUCKET,
+            Bucket: EnvironmentConfig.getProperty('collector-v1','S3_MESSAGE_INSTANCE_BUCKET'),
             Key: messageRequest.messageRequestGuid
         }, 
         function(err, data) {

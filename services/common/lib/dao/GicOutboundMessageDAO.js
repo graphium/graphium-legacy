@@ -33,7 +33,7 @@ var saveContentToS3 = function(gicOutboundMessageGuid, messageContent) {
         // do, I wish we had a better way, but for now we will see how it impacts
         // message throughput.
         s3.headObject({
-            Bucket: process.env.S3_MESSAGE_INSTANCE_BUCKET,
+            Bucket: EnvironmentConfig.getProperty('collector-v1','S3_MESSAGE_INSTANCE_BUCKET'),
             Key: gicOutboundMessageGuid
         },
         function(headObjectErr, headObjectData) {
@@ -41,11 +41,11 @@ var saveContentToS3 = function(gicOutboundMessageGuid, messageContent) {
             if( headObjectErr && headObjectErr.code == "NotFound" ) {
 
                 s3.putObject({
-                    Bucket: process.env.S3_GIC_OUTBOUND_MESSAGES_BUCKET,
+                    Bucket: EnvironmentConfig.getProperty('collector-v1','S3_GIC_OUTBOUND_MESSAGES_BUCKET'),
                     Key: gicOutboundMessageGuid,
                     ACL: "bucket-owner-full-control",
                     Body: gzippedContent,
-                    SSEKMSKeyId: process.env.S3_SSE_KEY_ID,
+                    SSEKMSKeyId: EnvironmentConfig.getProperty('collector-v1','S3_SSE_KEY_ID'),
                     ServerSideEncryption: "aws:kms",
                     StorageClass: "STANDARD"
                 }, 
@@ -70,7 +70,7 @@ var saveContentToS3 = function(gicOutboundMessageGuid, messageContent) {
 var persistDdbMessage = function(gicOutboundMessage) {
     return new Promise(function(resolve,reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
             Item: gicOutboundMessage,
             ConditionExpression: "attribute_not_exists(gicOutboundMessageGuid)"
         };
@@ -87,7 +87,7 @@ var persistDdbMessage = function(gicOutboundMessage) {
 var retrieveDdbMessage = function(gicOutboundMessageGuid) {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
             Key: {
                 gicOutboundMessageGuid: gicOutboundMessageGuid   
             },
@@ -114,7 +114,7 @@ var retrieveMessageContentFromS3 = function(gicOutboundMessage) {
     return new Promise(function(resolve, reject) {        
         var s3 = new AWS.S3( {signatureVersion:"v4"} );
         s3.getObject({
-            Bucket: process.env.S3_GIC_OUTBOUND_MESSAGES_BUCKET,
+            Bucket: EnvironmentConfig.getProperty('collector-v1','S3_GIC_OUTBOUND_MESSAGES_BUCKET'),
             Key: gicOutboundMessage.gicOutboundMessageGuid
         }, 
         function(err, data) {
@@ -163,7 +163,7 @@ var indicateSentToEmr = function(gicOutboundMessageGuid) {
         var now = Date.now();
         
         var params = {
-            TableName: process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
             Key: {
                 "gicOutboundMessageGuid": gicOutboundMessageGuid,
             },
@@ -197,7 +197,7 @@ var indicateAckError = function(gicOutboundMessageGuid, reason) {
             if(!reason) reason = "Unspecified";
             
             var params = {
-                TableName: process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
                 Key: {
                     "gicOutboundMessageGuid": gicOutboundMessageGuid,
                 },
@@ -229,7 +229,7 @@ var indicateAckSuccess = function(gicOutboundMessageGuid) {
     return new Promise(function(resolve,reject) {
         var now = Date.now();
         var params = {
-            TableName: process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
             Key: {
                 "gicOutboundMessageGuid": gicOutboundMessageGuid,
             },
@@ -256,8 +256,8 @@ var indicateAckSuccess = function(gicOutboundMessageGuid) {
 var retrievePendingFailedMessages = function(systemId, limit) {
 
     return ddbUtil.queryAll(
-        process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
-        process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES_PROCESSINGSTATUS_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES_PROCESSINGSTATUS_IDX'),
         "processingStatus = :processingStatus",
         {
             ":processingStatus": 'failed_pending_retry'
@@ -276,8 +276,8 @@ var retrievePendingMessages = function(systemId, limit) {
     // pending messages and then filter based on system ID. We also order them in ascending order
     // so that the oldest messages (smallest timestamp) get sent out first.
     return ddbUtil.queryAll(
-        process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES,
-        process.env.DDB_TABLE_GIC_OUTBOUND_MESSAGES_PROCESSINGSTATUS_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_GIC_OUTBOUND_MESSAGES_PROCESSINGSTATUS_IDX'),
         "processingStatus = :processingStatus",
         {
             ":processingStatus": 'pending'

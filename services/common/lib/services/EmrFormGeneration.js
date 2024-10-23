@@ -8,9 +8,9 @@ var signature = require('../util/signature.js');
 
 function getBaseUrl()
 {
-    if( !process.env.EMR_FORM_GENERATION_URI )
+    if( !EnvironmentConfig.getProperty('form-generation','EMR_FORM_GENERATION_URI') )
         throw new Error('Unable to create wrapper for gic-services, uri env vars not defined.');
-    return process.env.EMR_FORM_GENERATION_URI;
+    return EnvironmentConfig.getProperty('form-generation','EMR_FORM_GENERATION_URI');
 }
 
 module.exports = {
@@ -26,7 +26,7 @@ module.exports = {
         
         // generate signature
         var signatureObject = {formId:formId.toString(),org:orgInternalName};
-        qs.signature = signature.generate(signatureObject, process.env.CORE_SVC_API_KEY);
+        qs.signature = signature.generate(signatureObject, EnvironmentConfig.getProperty('flow-core-services','CORE_SVC_API_KEY'));
         
         var options = {
             method: 'GET',

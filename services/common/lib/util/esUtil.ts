@@ -1,15 +1,16 @@
 var elasticsearch = require('elasticsearch');
 
 import { Client } from 'elasticsearch';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 export function createCollectorClient():Client {
   return new Client({
     host: [
       {
-        host: process.env.ES_COLLECTOR_HOST,
-        auth: [process.env.ES_COLLECTOR_USER,process.env.ES_COLLECTOR_PASS].join(':'),
-        protocol: process.env.ES_COLLECTOR_PROTOCOL,
-        port: process.env.ES_COLLECTOR_PORT
+        host: EnvironmentConfig.getProperty('collector-v1','ES_COLLECTOR_HOST'),
+        auth: [EnvironmentConfig.getProperty('collector-v1','ES_COLLECTOR_USER'),EnvironmentConfig.getProperty('collector-v1','ES_COLLECTOR_PASS')].join(':'),
+        protocol: EnvironmentConfig.getProperty('collector-v1','ES_COLLECTOR_PROTOCOL'),
+        port: EnvironmentConfig.getProperty('collector-v1','ES_COLLECTOR_PORT')
       }
     ],
     //log: 'trace',

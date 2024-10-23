@@ -28,6 +28,8 @@ export class EnvironmentConfig {
     private static parameters: ConfigParameter[];
     private static secretsManager: AWS.SecretsManager;
     private static configLoaded: boolean = false;
+    private static groupsLoaded: string[] = [];
+    private static _environment: string;
 
     private static validateEnvironment(environment: string) {
         if (['local', 'pro', 'stage', 'dev', 'test'].indexOf(environment) < 0) {
@@ -43,6 +45,7 @@ export class EnvironmentConfig {
                     SecretId: `${environment}/config/group/${group}`,
                 })
                 .promise();
+            this.groupsLoaded.push(group);
         } catch (error) {
             if (error.code == 'ResourceNotFoundException') {
                 throw new Error(`Unable to find group config for environment (${environment}:${group}).`);
@@ -86,6 +89,7 @@ export class EnvironmentConfig {
                 connection: 'keep-alive',
             };
             getSecretResult = await axios(config);
+            this.groupsLoaded.push(group);
         } catch (error) {
             if (error.code == 'ResourceNotFoundException') {
                 throw new Error(`Unable to find group config for environment (${group}).`);
@@ -118,12 +122,19 @@ export class EnvironmentConfig {
             throw new Error('Unable to load config parameters, config already loaded.');
         }
 
+        this.groupsLoaded = parameters.map((p) => p.group);
+
         this.parameters = parameters;
         this.configLoaded = true;
     }
 
+    static get environment(): string {
+        return this._environment;
+    }
+
     static async loadConfig(groups: string[], environment: string) {
         this.validateEnvironment(environment);
+        EnvironmentConfig._environment = environment;
 
         if (environment === EnvironmentConfig.LOCAL) {
             this.parameters = [];
@@ -151,7 +162,11 @@ export class EnvironmentConfig {
 
     static getProperty(group: string, propertyName: string): string {
         if (!this.configLoaded) {
-            throw new Error('Unable to get config property, config has not been loaded from remote store.');
+            throw new Error('Unable to get property, no config has been loaded.');
+        }
+
+        if(!this.groupsLoaded.includes(group)) {
+            throw new Error(`Unable to get property, group ${group} has not been loaded.`);
         }
 
         let property = this.parameters.find((p) => {

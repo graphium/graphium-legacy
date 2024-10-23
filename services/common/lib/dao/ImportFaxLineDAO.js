@@ -1,3 +1,5 @@
+import { EnvironmentConfig } from '../config/EnvironmentConfig.js';
+
 var Promise = require('bluebird');
 var uuid = require('uuid');
 var winston = require('winston');
@@ -224,10 +226,10 @@ function createFaxForLine(importFaxLineGuid, fax, faxPdf, generateBatchConfig) {
         fax.importFaxLineGuid = faxLine.importFaxLineGuid;
         validateFax(fax);
 
-        return ddb.putUnique(process.env.DDB_TABLE_IMPORT_FAX, fax, "importFaxGuid");
+        return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX'), fax, "importFaxGuid");
     })
     .then(function() {
-        return s3.putObjectUnique(process.env.S3_IMPORT_FAX_PDF, fax.importFaxGuid, faxPdf);
+        return s3.putObjectUnique(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_FAX_PDF'), fax.importFaxGuid, faxPdf);
     })
     .then(function() {
         return createBatchForFax(faxLine, fax, faxPdf);
@@ -238,7 +240,7 @@ function createFaxForLine(importFaxLineGuid, fax, faxPdf, generateBatchConfig) {
 }
 
 function getFaxPdf(importFaxGuid) {
-    return s3.getObjectBody(process.env.S3_IMPORT_FAX_PDF, importFaxGuid)
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_FAX_PDF'), importFaxGuid)
     .catch(function(error) {
         if(error.code == 'NoSuchKey') {
             return Promise.reject(new Error('Unable to find PDF for this record.'));
@@ -253,7 +255,7 @@ function getFax(importFaxGuid, withFaxLine) {
     var fax;
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX'),
             KeyConditionExpression: "importFaxGuid = :importFaxGuid",
             ExpressionAttributeValues: {
                 ":importFaxGuid": importFaxGuid
@@ -284,7 +286,7 @@ function getFax(importFaxGuid, withFaxLine) {
 function getFaxByInterfaxId(interfaxTransactionId) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX'),
             IndexName: "interfaxTransactionId-index",
             KeyConditionExpression: "interfaxTransactionId = :interfaxTransactionId",
             ExpressionAttributeValues: {
@@ -304,8 +306,8 @@ function getFaxByInterfaxId(interfaxTransactionId) {
 function getFaxesForLine(importFaxLineGuid) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX,
-            IndexName: process.env.DDB_TABLE_IMPORT_FAX_LINE_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE_IDX'),
             KeyConditionExpression: "importFaxLineGuid = :importFaxLineGuid",
             ExpressionAttributeValues: {
                 ":importFaxLineGuid": importFaxLineGuid
@@ -324,7 +326,7 @@ function getFaxLine(importFaxLineGuid) {
     var faxLine;
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX_LINE,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'),
             KeyConditionExpression: "importFaxLineGuid = :importFaxLineGuid",
             ExpressionAttributeValues: {
                 ":importFaxLineGuid": importFaxLineGuid
@@ -354,8 +356,8 @@ function getFaxLine(importFaxLineGuid) {
 function getFaxLinesForOrg(orgInternalName) {
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX_LINE,
-            IndexName: process.env.DDB_TABLE_IMPORT_FAX_LINE_ORG_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE_ORG_IDX'),
             KeyConditionExpression: "orgInternalName = :orgInternalName",
             ExpressionAttributeValues: {
                 ":orgInternalName": orgInternalName
@@ -371,7 +373,7 @@ function getFaxLinesForOrg(orgInternalName) {
 }
 
 function getAllFaxLines() {
-    return ddb.scanAll(process.env.DDB_TABLE_IMPORT_FAX_LINE);
+    return ddb.scanAll(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'));
 }
 
 function createFaxLine(orgInternalName, facilityId, faxLineName, phoneNumber, generateBatchTemplateGuid, faxLineConfig) {
@@ -395,7 +397,7 @@ function createFaxLine(orgInternalName, facilityId, faxLineName, phoneNumber, ge
         return Promise.reject(error);
     }
 
-    return ddb.putUnique(process.env.DDB_TABLE_IMPORT_FAX_LINE, faxLine, "importFaxLineGuid")
+    return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'), faxLine, "importFaxLineGuid")
     .then(function() {
         return updateFaxLineConfig(faxLine.importFaxLineGuid, faxLineConfig);
     })
@@ -414,7 +416,7 @@ function encryptFaxLineConfig(faxLineConfig) {
         }
         
         var params = {
-            KeyId: 'alias/collector/'+process.env.FLOW_ENV+'/faxLineConfig',
+            KeyId: 'alias/collector/'+EnvironmentConfig.environment+'/faxLineConfig',
             Plaintext: JSON.stringify(faxLineConfig)
         };
         
@@ -472,7 +474,7 @@ function updateFaxLine(importFaxLineGuid, faxLine) {
     .then(function(faxLineConfigCipher) {
         return new Promise(function(resolve, reject) {
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_FAX_LINE,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'),
                 Key: {
                     importFaxLineGuid: importFaxLineGuid
                 },
@@ -505,7 +507,7 @@ function setCreatedBatchForFax(importFaxGuid, importBatchGuid) {
     return new Promise(function(resolve, reject) {
         var docClient = ddb.createDocClient();
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_FAX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX'),
             Key: {
                 importFaxGuid: importFaxGuid
             },
@@ -529,7 +531,7 @@ function updateFaxLineConfig(importFaxLineGuid, faxLineConfig) {
     .then(function(faxLineConfigCipher) {
         return new Promise(function(resolve, reject) {
             var params = {
-                TableName: process.env.DDB_TABLE_IMPORT_FAX_LINE,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_FAX_LINE'),
                 Key: {
                     importFaxLineGuid: importFaxLineGuid
                 },

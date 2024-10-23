@@ -56,8 +56,8 @@ var sequelize = require('sequelize');
 
 function decryptPassword(base64Password) {
  
-    var keyBytes = new Buffer(process.env.PW_KEY, 'hex');
-    var ivBytes = new Buffer(process.env.PW_IV, 'hex');    
+    var keyBytes = new Buffer(EnvironmentConfig.getProperty('index-db','PW_KEY'), 'hex');
+    var ivBytes = new Buffer(EnvironmentConfig.getProperty('index-db','PW_IV'), 'hex');    
     var decipher = crypto.createDecipheriv('aes-256-cbc', keyBytes, ivBytes);
     decipher.setAutoPadding(true);
     

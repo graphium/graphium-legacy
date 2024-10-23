@@ -36,7 +36,7 @@ var getSetting = function(orgInternalName, settingName) {
         var settingKey = [settingName,orgInternalName].join(':');
 
         var params = {
-            TableName: process.env.DDB_TABLE_ORG_SETTING,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_ORG_SETTING'),
             KeyConditionExpression: "settingKey = :settingKey",
             ExpressionAttributeValues: {
                 ":settingKey": settingKey
@@ -75,7 +75,7 @@ var putSetting = function(orgInternalName, settingName, settingValue) {
 
         var docClient = ddb.createDocClient();
         var params = {
-            TableName: process.env.DDB_TABLE_ORG_SETTING,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_ORG_SETTING'),
             Key: {
                 settingKey: settingKey
             },

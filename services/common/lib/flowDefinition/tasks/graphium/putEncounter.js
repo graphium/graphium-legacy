@@ -1,3 +1,5 @@
+import { EnvironmentConfig } from '@common/lib/config/EnvironmentConfig';
+
 var graphium = require('@graphiumhealth/graphium-sdk');
 
 var retrieveExistingEncounter = function(encounterNumber) {
@@ -6,8 +8,8 @@ var retrieveExistingEncounter = function(encounterNumber) {
         return Promise.resolve(null);
     
     this.searchService = new graphium.SearchService(this.importConfig.import.organizationNameInternal,
-													process.env.GRAPHIUM_SVC_USER,
-													process.env.GRAPHIUM_SVC_TOKEN);
+													EnvironmentConfig.getProperty('collector-v1','GRAPHIUM_SVC_USER'),
+													EnvironmentConfig.getProperty('collector-v1','GRAPHIUM_SVC_TOKEN'));
 };
 
 

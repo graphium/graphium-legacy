@@ -56,7 +56,7 @@ var putObject = function(bucket, key, data) {
             Bucket: bucket,
             Key: key,
             ACL: "bucket-owner-full-control",
-            SSEKMSKeyId: process.env.S3_SSE_KEY_ID,
+            SSEKMSKeyId: EnvironmentConfig.getProperty('collector-v1','S3_SSE_KEY_ID'),
             ServerSideEncryption: "aws:kms",
             StorageClass: "STANDARD"
         };
@@ -103,7 +103,7 @@ var putObjectUnique = function(bucket, key, data) {
                     Key: key,
                     ACL: "bucket-owner-full-control",
                     Body: data,
-                    SSEKMSKeyId: process.env.S3_SSE_KEY_ID,
+                    SSEKMSKeyId: EnvironmentConfig.getProperty('collector-v1','S3_SSE_KEY_ID'),
                     ServerSideEncryption: "aws:kms",
                     StorageClass: "STANDARD"
                 }, 

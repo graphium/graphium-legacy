@@ -19,7 +19,6 @@ var ImportFaxLineDAO = require('@common/lib/dao/ImportFaxLineDAO.js');
 var FlowDAO = require('@common/lib/dao/FlowDAO.js');
 var Promise = require('bluebird');
 var moment = require('moment');
-var InterfaxInbound = require('@common/lib/services/interfax/InterfaxInbound.js');
 var InboundMessageInstanceDAO = require('@common/lib/dao/InboundMessageInstanceDAO.js');
 var FlowCoreServicesPrivate = require('@common/lib/services/FlowCoreServicesPrivate');
 var MessageRequestService = require('@common/lib/dao/MessageRequestService');

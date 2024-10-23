@@ -6,31 +6,32 @@ import * as s3 from '../util/s3Util';
 import { ImportBatchRecord, ImportBatchRecordStatus, ImportBatchRecordDataType, ExternalWebFormData, DsvRowData, PdfBitmapPageData, RecordDataTypes } from "../model/collector/ImportBatchRecord";
 import ImportBatch, { ImportBatchStatus } from '../model/collector/ImportBatch';
 import { ExpressionAttributeValueMap } from 'aws-sdk/clients/dynamodb';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 export async function saveS3ImportBatchRecordData(importBatchRecordGuid:string, recordData:RecordDataTypes) {
     await s3.putObjectUnique(
-        process.env.S3_IMPORT_BATCH_RECORD_DATA, 
+        EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA'), 
         importBatchRecordGuid, 
         JSON.stringify(recordData));
 }
 
 export async function saveS3ImportBatchRecordDataEntryData(importBatchGuid:string, recordIndex:number, dataEntryData: {[name:string]:any}) {
     var key = importBatchGuid + ':' + recordIndex;
-    await s3.putObject(process.env.S3_IMPORT_BATCH_RECORD_DATA_ENTRY, key, dataEntryData);
+    await s3.putObject(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA_ENTRY'), key, dataEntryData);
 }
 
 export async function retrieveS3ImportBatchData(importBatchGuid:string) {
-    return s3.getObjectBody(process.env.S3_IMPORT_BATCH_DATA, importBatchGuid);
+    return s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_DATA'), importBatchGuid);
 }
 
 export async function retrieveS3ImportBatchRecordData<T extends RecordDataTypes>(importBatchRecordGuid:string):Promise<T> {
-    let recordDataString:string = await s3.getObjectBody(process.env.S3_IMPORT_BATCH_RECORD_DATA, importBatchRecordGuid);
+    let recordDataString:string = await s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA'), importBatchRecordGuid);
     return JSON.parse(recordDataString) as T;
 }
 
 export async function retrieveS3ImportBatchRecordDataEntryData(importBatchGuid:string, recordIndex:number):Promise<{[name:string] : any}> {
     try {
-        let objectBody:string = await s3.getObjectBody(process.env.S3_IMPORT_BATCH_RECORD_DATA_ENTRY, importBatchGuid + ':' + recordIndex)
+        let objectBody:string = await s3.getObjectBody(EnvironmentConfig.getProperty('collector-v1','S3_IMPORT_BATCH_RECORD_DATA_ENTRY'), importBatchGuid + ':' + recordIndex)
         return JSON.parse(objectBody);
     }
     catch(error) {
@@ -50,7 +51,7 @@ export async function createImportBatchRecordDynamo(importBatchRecord:ImportBatc
     delete cleansedRecord.dataEntryData;
     delete cleansedRecord.recordData;
 
-    await ddb.putUnique(process.env.DDB_TABLE_IMPORT_BATCH_RECORD, cleansedRecord, 'importBatchRecordGuid' );
+    await ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'), cleansedRecord, 'importBatchRecordGuid' );
 }
 
 
@@ -60,12 +61,12 @@ export async function createImportBatchDynamo(importBatch:ImportBatch) {
     delete cleanedDdbInstance.batchData;
 
     // Now persist the data to dynamo.
-    await ddb.putUnique(process.env.DDB_TABLE_IMPORT_BATCH, cleanedDdbInstance, "importBatchGuid");
+    await ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'), cleanedDdbInstance, "importBatchGuid");
 }
 
 export async function getBatchRecordDynamo(importBatchGuid:string, recordIndex:number):Promise<ImportBatchRecord> {
     let result = await ddb.createDocClient().query({
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
         KeyConditionExpression: "importBatchGuid = :importBatchGuid and recordIndex = :recordIndex",
         ExpressionAttributeValues: {
             ":importBatchGuid": importBatchGuid,
@@ -84,7 +85,7 @@ export async function getBatchRecordDynamo(importBatchGuid:string, recordIndex:n
 
 async function getBatchDynamo(importBatchGuid:string):Promise<ImportBatch> {
     let result = await ddb.createDocClient().query({
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
         KeyConditionExpression: "importBatchGuid = :importBatchGuid",
         ExpressionAttributeValues: {
             ":importBatchGuid": importBatchGuid
@@ -109,7 +110,7 @@ export interface RecordStatusResult {
 }
 export async function getBatchRecordStatuses(importBatchGuid:string):Promise<RecordStatusResult[]> {
     return await ddb.queryAll<RecordStatusResult>(<AWS.DynamoDB.DocumentClient.QueryInput>{
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
         KeyConditionExpression: "importBatchGuid = :importBatchGuid AND recordIndex >= :zero",
         ExpressionAttributeValues: {
             ":importBatchGuid": importBatchGuid,
@@ -224,8 +225,8 @@ export async function findActiveBatchByKey(orgInternalName:string, searchKey:str
 
 export async function getBatchesByKey(orgInternalName:string, searchKey:string):Promise<ImportBatch[]> {
     return ddb.queryAll<ImportBatch>(
-        process.env.DDB_TABLE_IMPORT_BATCH,
-        process.env.DDB_TABLE_IMPORT_BATCH_SEARCH_KEY_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_SEARCH_KEY_IDX'),
         "searchKey = :searchKey AND orgInternalName  = :orgInternalName",
         <ExpressionAttributeValueMap>{ 
             ":searchKey" : searchKey,
@@ -250,8 +251,8 @@ export async function findActiveRecordByKey(orgInternalName:string, searchKey:st
 
 export async function getBatchRecordsBySearchKey(orgInternalName:string, searchKey:string):Promise<ImportBatchRecord[]> {
     return ddb.queryAll<ImportBatchRecord>(
-        process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
-        process.env.DDB_TABLE_IMPORT_BATCH_RECORD_SEARCH_KEY_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD_SEARCH_KEY_IDX'),
         "searchKey = :searchKey AND orgInternalName = :orgInternalName",
         { 
             ":searchKey" : searchKey,
@@ -262,8 +263,8 @@ export async function getBatchRecordsBySearchKey(orgInternalName:string, searchK
 export async function getBatchRecordsBySecondarySearchKey(orgInternalName:string, secondarySearchKey:string, withRecordData:boolean = false, withDataEntryData:boolean = false):Promise<ImportBatchRecord[]> {
 
     let records = await ddb.queryAll<ImportBatchRecord>(
-        process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
-        process.env.DDB_TABLE_IMPORT_BATCH_RECORD_SECONDARY_SEARCH_KEY_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD_SECONDARY_SEARCH_KEY_IDX'),
         "secondarySearchKey = :secondarySearchKey AND orgInternalName = :orgInternalName",
         { 
             ":secondarySearchKey" : secondarySearchKey,

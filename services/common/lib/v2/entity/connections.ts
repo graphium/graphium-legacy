@@ -44,9 +44,8 @@ export async function getFrameworkConnection(
         password: EnvironmentConfig.getProperty(ConfigGroup.FRAMEWORKDB, 'FW_DB_RDS_SERVICE_PASS'),
         database: EnvironmentConfig.getProperty(ConfigGroup.FRAMEWORKDB, 'FW_DB_NAME'),
         entities: [],
-        ssl: process.env.GRAPHIUM_ENV !== 'local' ? {
+        ssl: EnvironmentConfig.environment !== 'local' ? {
             rejectUnauthorized: false
-            //process.env.GRAPHIUM_ENV !== 'local'
         } : false
     };
 

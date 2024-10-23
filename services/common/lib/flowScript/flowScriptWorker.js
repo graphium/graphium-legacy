@@ -192,7 +192,7 @@ function executeScript(flow, messageInstance) {
         },
         sftp: sftp,
         "_": _,
-        fs: process.env.NODE_ENV == 'development' ? fs : null,
+        fs: EnvironmentConfig.environment == 'development' ? fs : null,
         env: process.env,
         require: require,
         context: {

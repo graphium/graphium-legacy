@@ -12,6 +12,7 @@ import * as ImportBatchRecordDAO from './ImportBatchRecordDAO';
 import * as FlowDAO from './FlowDAO';
 import { FlowScript } from '../flowScript/FlowScript';
 import { ImportBatchRecordProcessingResult } from '../model/collector/ImportBatchRecordProcessingResult';
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 import { ImportBatchRecord, ImportBatchRecordStatus, ImportBatchRecordDataType, ExternalWebFormData, DsvRowData, PdfBitmapPageData, RecordDataTypes, validateNewImportBatchRecord } from "../model/collector/ImportBatchRecord";
 import { ExpressionAttributeValueMap, UpdateItemInput } from "aws-sdk/clients/dynamodb";
@@ -185,7 +186,7 @@ async function indicateExternalWebFormRecordDataEntry(importBatchGuid:string, re
     }
 
     let updateResult = await ddb.createDocClient().update({
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
         Key: {
             importBatchGuid: importBatchGuid,
             recordIndex: recordIndex
@@ -237,7 +238,7 @@ async function setBatchStatusCounts(importBatchGuid:string, records:RecordStatus
     }
 
     var params = {
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
         Key: {
             importBatchGuid: importBatchGuid
         },
@@ -289,7 +290,7 @@ export async function discardExternalWebFormRecord(importBatchGuid:string, recor
     }
 
     let updateResult = await ddb.createDocClient().update({
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
         Key: {
             importBatchGuid: importBatchGuid,
             recordIndex: recordIndex
@@ -477,7 +478,7 @@ export async function updateImportBatchFacility(importBatchGuid:string, newFacil
 
     //console.log('Updating batch facility ID.');
     await ddb.createDocClient().update({
-        TableName: process.env.DDB_TABLE_IMPORT_BATCH,
+        TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH'),
         Key: {
             importBatchGuid: importBatchGuid
         },
@@ -492,7 +493,7 @@ export async function updateImportBatchFacility(importBatchGuid:string, newFacil
     for(let record of batch.records) {
         //console.log(' - Updating batch record ' + record.recordIndex + '/' + batch.records.length);
         let updateResult = await ddb.createDocClient().update({
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_RECORD,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_RECORD'),
             Key: {
                 importBatchGuid: importBatchGuid,
                 recordIndex: record.recordIndex

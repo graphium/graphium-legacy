@@ -6,6 +6,7 @@ var Joi = require('joi');
 var ddb = require('../util/ddbUtil.js');
 var s3 = require('../util/s3Util.js');
 var FlowDAO = require('./FlowDAO.js');
+var EnvironmentConfig = require('../config/EnvironmentConfig').EnvironmentConfig;
 
 function validateTemplate(template) {
     var schema = {
@@ -62,8 +63,8 @@ function getTemplatesForOrg(orgInternalName) {
     var allTemplates;
     return new Promise(function(resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_TEMPLATE,
-            IndexName: process.env.DDB_TABLE_IMPORT_BATCH_ORG_NAME_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_TEMPLATE'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_ORG_NAME_IDX'),
             KeyConditionExpression: "orgInternalName = :orgInternalName and createdAt > :zero",
             ExpressionAttributeValues: {
                 ":orgInternalName": orgInternalName,
@@ -90,7 +91,7 @@ function getTemplatesForOrg(orgInternalName) {
 
 function getSystemTemplates() {
     return ddb.scanAll(
-        process.env.DDB_TABLE_IMPORT_BATCH_TEMPLATE,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_TEMPLATE'),
         "systemGlobal = :true",
         {
             ":true": true
@@ -118,7 +119,7 @@ function createTemplate(template) {
             return Promise.reject(new Error('Unable to create template, specified flow script is not compatible with import batches.'));
         }
         else {
-            return ddb.putUnique(process.env.DDB_TABLE_IMPORT_BATCH_TEMPLATE, template, "templateGuid")
+            return ddb.putUnique(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_TEMPLATE'), template, "templateGuid")
             .then(function() {
                 return Promise.resolve(template);
             });
@@ -142,7 +143,7 @@ function updateTemplate(template) {
 function _performUpdate(template) {
     return new Promise(function (resolve, reject) {
         var params = {
-            TableName: process.env.DDB_TABLE_IMPORT_BATCH_TEMPLATE,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_TEMPLATE'),
             Key: {
                 templateGuid: template.templateGuid
             },
@@ -199,7 +200,7 @@ function _performUpdate(template) {
 }
 
 function getTemplate(templateGuid) {
-    return ddb.getConsistent(process.env.DDB_TABLE_IMPORT_BATCH_TEMPLATE, "templateGuid", templateGuid);
+    return ddb.getConsistent(EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_IMPORT_BATCH_TEMPLATE'), "templateGuid", templateGuid);
 }
 
 module.exports = {

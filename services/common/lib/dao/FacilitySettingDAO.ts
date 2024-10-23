@@ -8,6 +8,7 @@ var https = require('https');
 var _ = require('lodash');
 var Joi = require('joi');
 var ddb = require('../util/ddbUtil.js');
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 
 var createDynamoDbDocClient = function() {
     var ddbService = new AWS.DynamoDB({
@@ -42,7 +43,7 @@ export async function getSetting(orgInternalName, facilityId, settingName):Promi
         var settingKey = [settingName,orgInternalName,facilityId.toString()].join(':');
 
         var params = {
-            TableName: process.env.DDB_TABLE_FACILITY_SETTING,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FACILITY_SETTING'),
             KeyConditionExpression: "settingKey = :settingKey",
             ExpressionAttributeValues: {
                 ":settingKey": settingKey
@@ -73,7 +74,7 @@ export async function getAllSettingsForOrg(orgInternalName, settingName):Promise
         }
 
         var params = {
-            TableName: process.env.DDB_TABLE_FACILITY_SETTING,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FACILITY_SETTING'),
             FilterExpression : 'begins_with(settingKey, :settingKey)',
             ExpressionAttributeValues : {':settingKey' : [settingName,orgInternalName].join(':')}
         };
@@ -88,8 +89,8 @@ export async function getAllSettingsForOrg(orgInternalName, settingName):Promise
 
 export async function getAllSettingsByName(settingName):Promise<FacilitySetting[]> {
     return ddb.queryAll( 
-        process.env.DDB_TABLE_FACILITY_SETTING, 
-        process.env.DDB_TABLE_FACILITY_SETTING_SETTING_NAME_IDX,
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FACILITY_SETTING'), 
+        EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FACILITY_SETTING_SETTING_NAME_IDX'),
         "settingName = :settingName",
         { ":settingName" : settingName } 
     );
@@ -123,7 +124,7 @@ export async function putSetting(orgInternalName, facilityId, settingName, setti
 
         var docClient = ddb.createDocClient();
         var params = {
-            TableName: process.env.DDB_TABLE_FACILITY_SETTING,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_FACILITY_SETTING'),
             Key: {
                 settingKey: settingKey
             },

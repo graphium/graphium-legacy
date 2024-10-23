@@ -26,7 +26,7 @@ export class FlowScript {
     }
 
     private log(level:'info'|'error', message:string, data?:{}) {
-        if(process.env.NODE_ENV == 'development') {
+        if(EnvironmentConfig.environment == 'development') {
             console.log(message);
         }
         else {
@@ -178,24 +178,10 @@ export class FlowScript {
             // Need to figure out a better way for the worker to 
             // access secretes but to protect them from the script it is executing.
             env: process.env,
-            /*env: { 
-                GRAPHIUM_SVC_USER: process.env.GRAPHIUM_SVC_USER, 
-                GRAPHIUM_SVC_TOKEN: process.env.GRAPHIUM_SVC_TOKEN,
-                GRAPHIUM_SVC_URL: process.env.GRAPHIUM_SVC_URL,
-                FLOW_ENV: process.env.FLOW_ENV,
-                JACKSON_SFTP_HOST: process.env.JACKSON_SFTP_HOST,
-                JACKSON_SFTP_PORT: process.env.JACKSON_SFTP_PORT,
-                JACKSON_SFTP_USER: process.env.JACKSON_SFTP_USER,
-                JACKSON_SFTP_PASS: process.env.JACKSON_SFTP_PASS,
-                CORE_SVC_API_KEY: process.env.CORE_SVC_API_KEY,
-                FLOW_CORE_SERVICES_PRIVATE_URI: process.env.FLOW_CORE_SERVICES_PRIVATE_URI,
-                FLOW_GIC_SERVICES_URI: process.env.FLOW_GIC_SERVICES_URI,
-                EMR_FORM_GENERATION_URI: process.env.EMR_FORM_GENERATION_URI
-            },*/
             silent: true
         };
 
-        if(process.env.NODE_ENV == 'development') {
+        if(EnvironmentConfig.environment == 'development') {
             forkOptions.execArgv = ['--debug=5555'];
         }
         else {

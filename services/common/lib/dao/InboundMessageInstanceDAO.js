@@ -19,7 +19,7 @@ var persistMessageInstance = function(messageInstance) {
     return new Promise(function(resolve,reject) {
         
         var params = {
-            TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
             Item: messageInstance,
             ConditionExpression: "attribute_not_exists(messageInstanceGuid)"
         };
@@ -91,11 +91,11 @@ var retryAddMessagesToKinesisStream = function(streamName, messageInstances) {
 }
 
 var addMessageInstancesToRouterStream = function(messageInstances) {
-    return retryAddMessagesToKinesisStream(process.env.KS_MESSAGE_ROUTER_STREAM, messageInstances);
+    return retryAddMessagesToKinesisStream(EnvironmentConfig.getProperty('collector-v1','KS_MESSAGE_ROUTER_STREAM'), messageInstances);
 }
 
 var addMessageInstancesToSyncStream = function(messageInstances) {
-    return retryAddMessagesToKinesisStream(process.env.KS_SYNC_MESSAGE_STREAM, messageInstances);
+    return retryAddMessagesToKinesisStream(EnvironmentConfig.getProperty('collector-v1','KS_SYNC_MESSAGE_STREAM'), messageInstances);
 }
 
 var create = function(orgInternalName, facilityId, messageRequest, flow ) {
@@ -129,8 +129,8 @@ function getMessageInstancesForFlow(flowGuid) {
     return new Promise(function(resolve,reject) {
 
         var params = {
-            TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
-            IndexName: process.env.DDB_TABLE_MESSAGE_INSTANCES_FLOWGUID_IDX,
+            TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES_FLOWGUID_IDX'),
             KeyConditionExpression: "flowGuid = :flowGuid and messageInstanceCreated > :messageInstanceCreated",
             ScanIndexForward: false,
             ExpressionAttributeValues: {
@@ -165,7 +165,7 @@ module.exports = {
         return new Promise(function(resolve,reject) {
 
             var params = {
-                TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
                 Key: {
                     "messageInstanceGuid": messageInstanceGuid,
                 },
@@ -185,7 +185,7 @@ module.exports = {
             var now = Date.now();
             
             var params = {
-                TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
                 Key: {
                     "messageInstanceGuid": messageInstanceGuid,
                 },
@@ -239,7 +239,7 @@ module.exports = {
         return new Promise(function(resolve,reject) {
 
             var params = {
-                TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
                 Key: {
                     "messageInstanceGuid": messageInstanceGuid,
                 },
@@ -273,7 +273,7 @@ module.exports = {
             return new Promise(function(resolve,reject) {
 
                 var params = {
-                    TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+                    TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
                     Key: {
                         "messageInstanceGuid": messageInstanceGuid,
                     },
@@ -302,7 +302,7 @@ module.exports = {
     getMessageInstanceStatus: function(messageInstanceGuid) {
         return new Promise(function(resolve,reject) {
             var params = {
-                TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
                 Key: {
                     "messageInstanceGuid": messageInstanceGuid,
                 },
@@ -332,8 +332,8 @@ module.exports = {
         return new Promise(function(resolve,reject) {
 
             var params = {
-                TableName: process.env.DDB_TABLE_MESSAGE_INSTANCES,
-                IndexName: process.env.DDB_TABLE_MESSAGE_MESSAGEREQUESTGUID_IDX,
+                TableName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_INSTANCES'),
+                IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_MESSAGE_MESSAGEREQUESTGUID_IDX'),
                 KeyConditionExpression: "messageRequestGuid = :messageRequestGuid",
                 ExpressionAttributeValues: {
                     ":messageRequestGuid": messageRequestGuid,

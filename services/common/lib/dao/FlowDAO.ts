@@ -7,7 +7,7 @@ import * as Joi from 'joi';
 var ddb = require('../util/ddbUtil.js');
 import Flow from '../model/flow/Flow.js';
 import * as Bluebird from 'bluebird';
-
+import { EnvironmentConfig } from '../config/EnvironmentConfig';
 var createDynamoDbDocClient = function() {
     var ddbService = new AWS.DynamoDB({
         region:"us-east-1"
@@ -98,7 +98,7 @@ export function updateFlow(flow) {
             */
 
             var params = {
-                TableName: process.env.DDB_TABLE_FLOW_CONFIGS,
+                TableName: EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'),
                 Key: {
                     flowGuid: flow.flowGuid,
                 },
@@ -190,7 +190,7 @@ export function updateFlowConfig(flowGuid, flowConfig) {
     .then(function(flowConfigCipher) {
         return new Promise(function(resolve, reject) {
             var params = {
-                TableName: process.env.DDB_TABLE_FLOW_CONFIGS,
+                TableName: EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'),
                 Key: {
                     "flowGuid": flowGuid,
                 },
@@ -221,7 +221,7 @@ export function updateFlowConfig(flowGuid, flowConfig) {
 var retrieveFlow = function(flowGuid):Promise<Flow> {
     return new Promise<Flow>(function(resolve,reject) {
         var params = {
-            TableName : process.env.DDB_TABLE_FLOW_CONFIGS,
+            TableName : EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'),
             Key: {
                 'flowGuid': flowGuid
             },
@@ -300,7 +300,7 @@ export function createFlow(flow) {
         return Promise.reject(error);
     }
 
-    return ddb.putUnique(process.env.DDB_TABLE_FLOW_CONFIGS, flow, "flowGuid")
+    return ddb.putUnique(EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'), flow, "flowGuid")
     .then(function(flowResult) {
         if(flowConfig && _.isPlainObject(flowConfig)) {
             return updateFlowConfig(flow.flowGuid, flowConfig)
@@ -318,7 +318,7 @@ export function createFlow(flow) {
 export function getSystemFlowScripts() {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_SYSTEM_FLOW_SCRIPTS
+            TableName: EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_SYSTEM_FLOW_SCRIPTS')
         };
 
         var docClient = createDynamoDbDocClient();
@@ -336,8 +336,8 @@ export function getSystemFlowScripts() {
 export function retrieveSystemFlowScriptByName(systemFlowScriptName) {
     return new Promise(function(resolve,reject) {
        var params = {
-            TableName: process.env.DDB_TABLE_SYSTEM_FLOW_SCRIPTS,
-            IndexName: process.env.DDB_TABLE_SYSTEM_FLOW_SCRIPTS_NAME_IDX,
+            TableName: EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_SYSTEM_FLOW_SCRIPTS'),
+            IndexName: EnvironmentConfig.getProperty('collector-v1','DDB_TABLE_SYSTEM_FLOW_SCRIPTS_NAME_IDX'),
             FilterExpression : 'systemFlowScriptName = :systemFlowScriptName',
             ExpressionAttributeValues : {':systemFlowScriptName' : systemFlowScriptName}
         };
@@ -380,7 +380,7 @@ var encryptFlowConfig = async function(flowConfig):Promise<string> {
     }
     
     var params = {
-        KeyId: 'alias/flow/'+process.env.FLOW_ENV+'/flowConfig',
+        KeyId: 'alias/flow/'+EnvironmentConfig.environment+'/flowConfig',
         Plaintext: JSON.stringify(flowConfig)
     };
     
@@ -428,7 +428,7 @@ var decryptFlowConfig = function(flowConfigCipher) {
 
 export function getFlowsForMessage(orgInternalName, facilityId, streamType, messageType) {
     return ddb.scanAll(
-        process.env.DDB_TABLE_FLOW_CONFIGS, 
+        EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'), 
         "active = :active and orgInternalName = :orgInternalName and facilityId = :facilityId and streamType = :streamType and contains(messageTypes, :messageType)", 
         {
             ":orgInternalName": orgInternalName,
@@ -446,7 +446,7 @@ export function getFlowsForMessage(orgInternalName, facilityId, streamType, mess
 
 export function getFlowsForScheduledMessage(scheduleType) {
     return ddb.scanAll(
-        process.env.DDB_TABLE_FLOW_CONFIGS, 
+        EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'), 
         "active = :active and streamType = :streamType and contains(messageTypes, :messageType)", 
         {
             ":streamType": "scheduled",
@@ -463,7 +463,7 @@ export function getFlowsForScheduledMessage(scheduleType) {
 export function getFlowsForOrg(orgInternalName, projectAll) {
     console.log('Returning flows for org: ' + orgInternalName);
     return ddb.scanAll(
-        process.env.DDB_TABLE_FLOW_CONFIGS, 
+        EnvironmentConfig.getProperty('flow-script-v1','DDB_TABLE_FLOW_CONFIGS'), 
         "active = :active and (orgInternalName = :orgInternalName or systemGlobal = :true)", 
         {
             ":orgInternalName": orgInternalName,
