@@ -7,3 +7,4 @@ node_modules/
 services/config/
 
 **/.DS_Store
+ngrok.yml

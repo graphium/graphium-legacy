@@ -17,7 +17,7 @@ import xmlParser = require('express-xml-bodyparser');
 import session = require('express-session');
 var passport = require('passport');
 import ConnectRedis = require('connect-redis');
-import * as Redis from 'ioredis';
+import Redis from 'ioredis';
 let RedisStore = ConnectRedis(session);
 import enforce = require('express-sslify');
 //var FileStore = require('session-file-store')(session);
@@ -29,8 +29,7 @@ import { EnvironmentConfig } from '@common/lib/config/EnvironmentConfig';
 let app:any;
 
 async function main() {
-
-    console.log('loading environment config...');
+    console.log('loading environment config ...');
     await EnvironmentConfig.loadConfig(['general','auth0','org-db','index-db','cache'],process.env.GRAPHIUM_ENV); //process.env.FLOW_ENV);
     console.log('config loaded.');
 
@@ -154,34 +153,28 @@ async function main() {
         };
 
         next();
-    })
+    });
 
     let routes = require('./lib/routes/index');
     let user = require('./lib/routes/user');
     let collector = require('./lib/routes/collector');
     let collectorServices = require('./lib/routes/collector.rest');
-    let externalWebFormServices = require('./lib/routes/externalWebForms').default;
     let dashboardRoutes = require('./lib/routes/dashboards').dashboardRoutes;
     let dashboardServices = require('./lib/routes/dashboards.rest').dashboardServices;
-    let logoServices = require('./lib/routes/org.settings.logos').logoServices;
     let orgSettingsFlow = require('./lib/routes/org.settings.flow');
     let orgSettingsFtp = require('./lib/routes/org.settings.ftp');
     let orgSettingsCollector = require('./lib/routes/org.settings.collector');
-    let encountersServices = require('./lib/routes/encounters.rest').default;
     let facilityServices = require('./lib/routes/facility.rest').default;
 
     app.use('/', routes);
     app.use('/user', user);
     app.use('/collector', collector);
     app.use('/collector', collectorServices);
-    app.use('/collector', externalWebFormServices);
     app.use('/dashboards', dashboardRoutes);
     app.use('/dashboards', dashboardServices);
-    app.use('/org/settings/logos', logoServices);
     app.use('/org/settings/flow', orgSettingsFlow);
     app.use('/org/settings/ftp', orgSettingsFtp);
     app.use('/org/settings/collector', orgSettingsCollector);
-    app.use('/encounters', encountersServices);
     app.use('/facilities', facilityServices);
 
     // catch 404 and forward to error handler
