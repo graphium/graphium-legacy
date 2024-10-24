@@ -139,5 +139,5 @@ function updateUsageTable(data, reset) {
     +           '</tr>';
     $usageTableBody.append(html);
 
-    initializeImportRecordUsageModal();
+    //initializeImportRecordUsageModal();
 }

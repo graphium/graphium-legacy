@@ -3,7 +3,7 @@ block layoutVars
   - var title = 'System Usage'
   - var sidebarLink = 'dashboards/usage'
 block modals
-  include importRecordUsageModal
+  //- include importRecordUsageModal
 block content
   .row
     - var range = moment.range(moment().subtract(18,'months'), moment());
@@ -33,4 +33,4 @@ block otherscripts
   script
     include usage.js
   script
-    include importRecordUsageModal.js
+    //-include importRecordUsageModal.js
